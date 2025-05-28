@@ -15,7 +15,7 @@ export function useLogin() {
     try {
       const response = await authApi.login(formData)
       console.log('로그인 후 accessToken:', response.accessToken)
-      router.push("/chat")
+      router.push("/auth/couple-register")
     } catch (error) {
       console.error("Login failed:", error)
       // Toast 에러 메시지 표시

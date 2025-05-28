@@ -19,7 +19,6 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await login(formData)
-    window.location.href = "/auth/couple-register"
   }
 
   return (

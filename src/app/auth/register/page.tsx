@@ -2,7 +2,6 @@
 
 import { RegisterForm } from "@/features/auth/components/RegisterForm"
 import { Header } from "@/components/layout/Header"
-import Image from "next/image"
 
 export default function RegisterPage() {
   return (
@@ -10,8 +9,8 @@ export default function RegisterPage() {
       <Header title="회원가입" showBack />
       <div className="flex-1 px-6 py-8 overflow-y-auto">
         <div className="mb-8 text-center fade-in">
-          <Image src="/images/로고.png" alt="I:mean" width={220} height={220} className="mx-auto mb-2" style={{ maxHeight: '220px' }} />
-          <p className="text-[#5a9b5a] text-sm tracking-wider">CHAT WITH AI</p>
+          <img src="/images/logo.png" alt="I:mean" width={220} height={220} className="mx-auto mb-2" style={{ maxHeight: '220px' }} />
+          {/* <p className="text-[#5a9b5a] text-sm tracking-wider">CHAT WITH AI</p> */}
         </div>
         <RegisterForm />
       </div>
