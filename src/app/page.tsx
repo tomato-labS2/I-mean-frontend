@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Sparkles, MessageCircle } from "lucide-react"
-import Image from "next/image"
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
@@ -33,7 +32,7 @@ export default function HomePage() {
         {/* Logo section */}
         <div className="mb-12 text-center">
           <div className="relative mb-4">
-            <Image src="/images/logo.png" alt="I:mean" width={220} height={220} className="mx-auto mb-2" style={{ maxHeight: '220px' }} />
+            <img src="/images/logo.png" alt="I:mean" width={220} height={220} className="mx-auto mb-2" style={{ maxHeight: '220px' }} />
             <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-[#f4e6a1] animate-pulse" />
           </div>
           <p className="text-[#5a9b5a] text-sm tracking-wider font-medium">CHAT WITH AI</p>
