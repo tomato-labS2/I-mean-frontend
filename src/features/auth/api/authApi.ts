@@ -2,7 +2,8 @@ import type { LoginFormData, RegisterFormData } from "@/features/auth/types"
 import type { User } from "@/features/auth/types"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
-const API_BASE = "http://localhost:8080/api"
+// const API_BASE = "http://localhost:8080/api"
+const API_BASE = "http://59.13.225.242:8080/api"
 
 interface MemberInfo {
   memberCode: string

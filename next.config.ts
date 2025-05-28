@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   images: {
     loader: "akamai", // 정적 사이트에 적합한 이미지 처리 방식
     path: "/",        // 이미지 경로 기준
+    unoptimized: true, // 이 설정을 추가
   },
 
   // (선택) basePath도 설정 가능
