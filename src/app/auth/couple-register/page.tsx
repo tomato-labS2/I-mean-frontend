@@ -2,8 +2,23 @@
 
 import { CoupleCodeForm } from "@/features/auth/components/CoupleCodeForm"
 import { Header } from "@/components/layout/Header"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function CoupleRegisterPage() {
+  const { isAuthenticated, isLoading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/auth/login")
+    }
+  }, [isLoading, isAuthenticated, router])
+
+  if (isLoading) return null
+  if (!isAuthenticated) return null
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header title="커플 등록" showBack />
