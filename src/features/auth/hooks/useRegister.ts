@@ -13,9 +13,7 @@ export function useRegister() {
     setIsLoading(true)
     try {
       await authApi.register(formData)
-      // 회원가입 후 자동 로그인
-      await authApi.login({ email: formData.email, password: formData.password })
-      router.push("/auth/couple-register")
+      router.push("/auth/login")
       // Toast 성공 메시지 표시
     } catch (error) {
       console.error("Register failed:", error)
