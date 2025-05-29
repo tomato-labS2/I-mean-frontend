@@ -6,20 +6,16 @@ import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useCoupleRegister } from "@/features/auth/hooks/useCoupleRegister"
-import { Heart, Copy, RefreshCw } from "lucide-react"
+import { Heart, Copy } from "lucide-react"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY as string;
 
 export function CoupleCodeForm() {
-  const { generateCode, joinCouple, isLoading, coupleCode } = useCoupleRegister()
+  const { joinCouple, isLoading, coupleCode } = useCoupleRegister()
   const [partnerCode, setPartnerCode] = useState("")
   const [mode, setMode] = useState<"generate" | "join">("generate")
   const [memberCode, setMemberCode] = useState<string | null>(null)
-
-  const handleGenerateCode = async () => {
-    await generateCode()
-  }
 
   const handleJoinCouple = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,12 +32,21 @@ export function CoupleCodeForm() {
   useEffect(() => {
     setMemberCode(tokenStorage.getMemberCode())
 
+    const win = window as { Kakao?: any }
     const createKakaoButton = () => {
-      if (!(window as any).Kakao) {
-        console.log('Kakao SDK not loaded')
+      const kakao = win.Kakao;
+      if (
+        !kakao ||
+        typeof kakao !== "object" ||
+        typeof kakao.isInitialized !== "function" ||
+        typeof kakao.init !== "function" ||
+        typeof kakao.Link !== "object" ||
+        typeof kakao.Link.createDefaultButton !== "function"
+      ) {
+        console.log('Kakao SDK not loaded or invalid')
         return
       }
-      if (!(window as any).Kakao.isInitialized()) {
+      if (!kakao.isInitialized()) {
         console.log('Kakao SDK loaded but not initialized')
       } else {
         console.log('Kakao SDK loaded and initialized')
@@ -52,7 +57,7 @@ export function CoupleCodeForm() {
         console.log('btnKakao button found, creating Kakao share button')
       }
       try {
-        (window as any).Kakao.Link.createDefaultButton({
+        kakao.Link.createDefaultButton({
           container: "#btnKakao",
           objectType: "feed",
           content: {
@@ -81,7 +86,7 @@ export function CoupleCodeForm() {
     }
 
     // Kakao SDK 동적 로드
-    if (typeof window !== "undefined" && !(window as any).Kakao) {
+    if (typeof window !== "undefined" && !win.Kakao) {
       console.log('Kakao SDK not found, loading script...')
       const script = document.createElement("script")
       script.src = "https://developers.kakao.com/sdk/js/kakao.js"
@@ -89,23 +94,22 @@ export function CoupleCodeForm() {
       script.onload = () => {
         console.log('Kakao SDK script loaded')
         console.log('KAKAO KEY:', kakaoKey)
-        if (!(window as any).Kakao.isInitialized()) {
-          (window as any).Kakao.init(kakaoKey)
+        if (!win.Kakao.isInitialized()) {
+          win.Kakao.init(kakaoKey)
           console.log('Kakao SDK initialized')
         }
         createKakaoButton()
       }
       document.body.appendChild(script)
-    } else if ((window as any).Kakao && !(window as any).Kakao.isInitialized()) {
+    } else if (win.Kakao && !win.Kakao.isInitialized()) {
       console.log('KAKAO KEY:', kakaoKey);
-      (window as any).Kakao.init(kakaoKey)
+      win.Kakao.init(kakaoKey)
       console.log('Kakao SDK initialized (already loaded)')
       createKakaoButton()
-    } else if ((window as any).Kakao && (window as any).Kakao.isInitialized()) {
+    } else if (win.Kakao && win.Kakao.isInitialized()) {
       console.log('Kakao SDK already loaded and initialized')
       createKakaoButton()
     }
-    // eslint-disable-next-line
   }, [memberCode])
 
   return (

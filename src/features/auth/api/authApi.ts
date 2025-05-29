@@ -1,4 +1,4 @@
-import type { LoginFormData, RegisterFormData, AuthApiResponse, MemberInfo, User } from "@/features/auth/types"
+import type { LoginFormData, RegisterFormData, AuthApiResponse, User } from "@/features/auth/types"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 const API_BASE = "http://localhost:8080/api"
