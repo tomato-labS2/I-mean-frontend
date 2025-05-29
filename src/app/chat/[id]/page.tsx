@@ -1,40 +1,16 @@
-"use client"
+import ChatPageClient from "@/features/chat/components/ChatPageClient"
 
-import { useParams, useRouter } from "next/navigation"
-import { ChatInterface } from "@/features/chat/components/ChatInterface"
-import { useChat } from "@/features/chat/hooks/useChat"
+export function generateStaticParams(): Array<{ id: string }> {
+  return [
+    { id: 'general' }, // '일반' 채팅방
+    { id: 'support' }, // '고객 지원' 채팅방
+    { id: 'feedback' }, // '피드백' 채팅방
+  ];
+}
 
-export default function ChatPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { chatRooms, sendMessage, getMessagesForRoom } = useChat()
+export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const roomId = resolvedParams.id;
 
-  const roomId = params.id as string
-  const currentRoom = chatRooms.find((room) => room.id === roomId)
-  const messages = getMessagesForRoom(roomId)
-
-  if (!currentRoom) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>채팅방을 찾을 수 없습니다.</p>
-      </div>
-    )
-  }
-
-  const handleSendMessage = (content: string) => {
-    sendMessage(roomId, content)
-  }
-
-  const handleBack = () => {
-    router.push("/")
-  }
-
-  return (
-    <ChatInterface
-      roomName={currentRoom.name}
-      messages={messages}
-      onSendMessage={handleSendMessage}
-      onBack={handleBack}
-    />
-  )
+  return <ChatPageClient roomId={roomId} />;
 }
