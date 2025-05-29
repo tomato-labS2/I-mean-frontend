@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { authApi } from "@/features/auth/api/authApi"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 import type { User } from "@/features/auth/types"
+import { useToast } from "@/components/common/Toast"
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -49,4 +50,23 @@ export function useAuth() {
     logout,
     checkAuth,
   }
+}
+
+export function useLogout() {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const logout = async () => {
+    try {
+      await authApi.logout();
+      showToast("로그아웃되었습니다.");
+      router.push("/");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showToast(error.message || "로그아웃에 실패했습니다.");
+      } else {
+        showToast("로그아웃에 실패했습니다.");
+      }
+    }
+  };
+  return { logout };
 }

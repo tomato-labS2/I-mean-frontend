@@ -161,12 +161,6 @@ export function RegisterForm() {
             로그인
           </Link>
         </div>
-        <div className="text-sm text-[#999] mt-2">
-          커플로 가입하시나요?{" "}
-          <Link href="/auth/couple-register" className="text-[#5a9b5a] font-semibold underline underline-offset-2">
-            커플 등록
-          </Link>
-        </div>
       </div>
     </form>
   )
