@@ -11,6 +11,15 @@ import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY as string;
 
+interface KakaoLink {
+  createDefaultButton: (opts: Record<string, unknown>) => void;
+}
+interface KakaoSDK {
+  isInitialized: () => boolean;
+  init: (key: string) => void;
+  Link: KakaoLink;
+}
+
 export function CoupleCodeForm() {
   const { joinCouple, isLoading, coupleCode } = useCoupleRegister()
   const [partnerCode, setPartnerCode] = useState("")
@@ -32,7 +41,7 @@ export function CoupleCodeForm() {
   useEffect(() => {
     setMemberCode(tokenStorage.getMemberCode())
 
-    const win = window as { Kakao?: any }
+    const win = window as unknown as { Kakao?: KakaoSDK }
     const createKakaoButton = () => {
       const kakao = win.Kakao;
       if (
@@ -94,11 +103,15 @@ export function CoupleCodeForm() {
       script.onload = () => {
         console.log('Kakao SDK script loaded')
         console.log('KAKAO KEY:', kakaoKey)
-        if (!win.Kakao.isInitialized()) {
-          win.Kakao.init(kakaoKey)
-          console.log('Kakao SDK initialized')
+        if (win.Kakao && typeof win.Kakao.isInitialized === 'function') {
+          if (!win.Kakao.isInitialized()) {
+            win.Kakao.init(kakaoKey)
+            console.log('Kakao SDK initialized')
+          }
+          createKakaoButton()
+        } else {
+          console.log('Kakao SDK not loaded after script')
         }
-        createKakaoButton()
       }
       document.body.appendChild(script)
     } else if (win.Kakao && !win.Kakao.isInitialized()) {
