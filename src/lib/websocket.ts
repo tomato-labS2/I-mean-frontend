@@ -9,7 +9,7 @@ export type SystemPromptCallback = (message: string, sessionId: number | undefin
 // WebSocketMessage 인터페이스를 export하여 외부에서 타입 참조 가능하도록 수정
 export interface WebSocketMessage {
   type: string;
-  content: any;
+  content: string;
   user_id?: string;
   timestamp?: string;
   session_id?: number;
@@ -68,7 +68,7 @@ export const connectWebSocket = (
 };
 
 // sendMessage 함수는 type: 'response'일 경우 현재 sessionId를 포함하도록 수정
-export const sendWebSocketMessage = (type: string, content: any) => {
+export const sendWebSocketMessage = (type: string, content: string) => {
   if (socket && socket.readyState === WebSocket.OPEN) {
     const messagePayload: Partial<WebSocketMessage> = { type, content };
     if (type === 'response' && currentSessionId !== undefined) {
