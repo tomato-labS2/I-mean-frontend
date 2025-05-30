@@ -35,7 +35,6 @@ export default function HomePage() {
             <img src="/images/logo.png" alt="I:mean" width={220} height={220} className="mx-auto mb-2" style={{ maxHeight: '220px' }} />
             <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-[#f4e6a1] animate-pulse" />
           </div>
-          <p className="text-[#5a9b5a] text-sm tracking-wider font-medium">CHAT WITH AI</p>
           <p className="text-[#999] text-xs mt-2">AI와 함께하는 스마트한 대화</p>
         </div>
 

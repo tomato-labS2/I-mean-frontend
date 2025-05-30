@@ -10,7 +10,7 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         <div className="mb-12 text-center fade-in">
           <img src="/images/logo.png" alt="I:mean" width={220} height={220} className="mx-auto mb-2" style={{ maxHeight: '220px' }} />
-          <p className="text-[#5a9b5a] text-sm tracking-wider">CHAT WITH AI</p>
+          {/* <p className="text-[#5a9b5a] text-sm tracking-wider">CHAT WITH AI</p> */}
         </div>
         <LoginForm />
       </div>
