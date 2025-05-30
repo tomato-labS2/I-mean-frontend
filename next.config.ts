@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
 
   // (선택) basePath도 설정 가능
   // basePath: '/your-subpath',
+
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8080/api/:path*',
+      },
+    ]
+  },
 };
 
 export default nextConfig;
