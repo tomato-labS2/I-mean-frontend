@@ -22,7 +22,7 @@ export function useLogin() {
         return
       }
       setTimeout(() => {
-        router.push("/auth/couple-register")
+        router.push("/main")
       }, 200)
     } catch (error) {
       console.error("Login failed:", error)

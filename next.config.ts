@@ -7,7 +7,9 @@ const nextConfig: NextConfig = {
   trailingSlash: true, //모든 경로에 슬래시 붙여서 S3에서 폴더처럼 인식
   output: "export",
   images: {
-    unoptimized: true, // 이미지 최적화 기능 꺼짐
+    loader: "akamai", // 정적 사이트에 적합한 이미지 처리 방식
+    path: "/",        // 이미지 경로 기준
+    unoptimized: true, // 이 설정을 추가
   },
 
   // (선택) basePath도 설정 가능
