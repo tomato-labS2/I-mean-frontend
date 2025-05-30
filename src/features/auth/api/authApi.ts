@@ -2,7 +2,8 @@ import type { LoginFormData, RegisterFormData, AuthApiResponse, User } from "@/f
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 // const API_BASE = "http://localhost:8080/api"
-const API_BASE = "http://59.13.225.242:8080/api"
+const API_BASE = "http://localhost:8080/api"
+// const API_BASE = "http://59.13.225.242:8000/api"
 
 export const authApi = {
   login: async (data: LoginFormData): Promise<AuthApiResponse["data"]> => {
@@ -58,15 +59,46 @@ export const authApi = {
 
   getProfile: async (): Promise<User> => {
     const token = tokenStorage.getToken()
-    const res = await fetch(`${API_BASE}/auth/me`, {
+    
+    // 토큰이 있고 멤버 정보가 로컬 스토리지에 있다면 해당 정보를 사용
+    const memberCode = tokenStorage.getMemberCode()
+    const coupleStatus = tokenStorage.getCoupleStatus()
+    const memberId = tokenStorage.getMemberId()
+    const coupleId = tokenStorage.getCoupleId()
+    const memberRole = tokenStorage.getMemberRole()
+    
+    if (token && memberCode) {
+      // 로컬 스토리지의 정보로 User 객체 생성
+      return {
+        memberId: Number(memberId) || 0,
+        memberCode: memberCode,
+        memberRole: memberRole || "USER",
+        coupleStatus: (coupleStatus as "SINGLE" | "COUPLED") || "SINGLE",
+        coupleId: coupleId ? Number(coupleId) : null,
+        isInCouple: coupleStatus === "COUPLED",
+        isAdmin: memberRole === "ADMIN",
+        isSuperAdmin: memberRole === "SUPER_ADMIN"
+      }
+    }
+    
+    // 토큰은 있지만 멤버 정보가 없는 경우 API 호출 시도
+    // 실제 프로필 API가 구현되면 여기를 수정
+    const res = await fetch(`${API_BASE}/member/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     })
+    
+    if (!res.ok) {
+      // API 호출 실패 시 토큰 클리어
+      tokenStorage.clear()
+      throw new Error("인증 정보가 유효하지 않습니다.")
+    }
+    
     const result = await res.json()
-    if (!res.ok || !result.success) {
+    if (!result.success) {
       throw new Error(result.message || "사용자 정보 조회 실패")
     }
     return result.data as User
