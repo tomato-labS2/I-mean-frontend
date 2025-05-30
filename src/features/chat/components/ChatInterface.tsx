@@ -61,6 +61,11 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
         if (!isMounted) return
         console.log(`[ChatInterface ${roomId}] WebSocket 메시지 수신:`, wsMessage)
 
+        if (wsMessage.type === "pong") {
+          console.log(`[ChatInterface ${roomId}] pong 메시지 수신 - 연결 유지용`)
+          return // 아무 것도 하지 않음
+        }
+
         if (wsMessage.type === "chat_history" && wsMessage.messages) {
           const historyChatMessages: ChatMessage[] = wsMessage.messages.map(m => ({
             ...m,

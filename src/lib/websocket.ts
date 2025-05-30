@@ -26,7 +26,7 @@ export type SystemPromptCallback = (message: string, sessionId: number | undefin
 
 // WebSocketMessage 인터페이스를 export하여 외부에서 타입 참조 가능하도록 수정
 export interface WebSocketMessage {
-  type: "message" | "ai_message" | "system" | "session" | "response" | "error" | "chat_history";
+  type: "message" | "ai_message" | "system" | "session" | "response" | "error" | "chat_history" | "pong";
   content?: string;
   user_id?: string | number;
   timestamp?: string | Date; 
@@ -205,7 +205,7 @@ export const connectWebSocket = (
         console.log("Raw WebSocket message received (websocket.ts):", rawMessage);
 
         const messageType = rawMessage.type as WebSocketMessage['type'];
-        const validMessageTypes: WebSocketMessage['type'][] = ["message", "ai_message", "system", "session", "response", "error", "chat_history"];
+        const validMessageTypes: WebSocketMessage['type'][] = ["message", "ai_message", "system", "session", "response", "error", "chat_history", "pong"];
 
         if (!validMessageTypes.includes(messageType)) {
             console.error("Invalid or missing message type from server:", rawMessage.type, rawMessage);
@@ -228,6 +228,10 @@ export const connectWebSocket = (
         };
         
         switch (message.type) {
+          case "pong":
+            console.log("서버로부터 pong 수신 (heartbeat)");
+            break;
+            
           case "system":
             if (message.content?.includes("계속하시겠습니까?")) {
               onSystemPrompt(message.content, message.session_id);
@@ -237,6 +241,7 @@ export const connectWebSocket = (
             break;
           case "session":
             onSessionUpdate(message);
+            currentSessionId = message.session_id;
             break;
           case "chat_history":
           case "message":
@@ -247,6 +252,7 @@ export const connectWebSocket = (
             break;
           default: 
             const _exhaustiveCheck: never = message.type;
+            
             console.warn("Unhandled WebSocket message type (pre-validated, should not reach here):", _exhaustiveCheck, message);
             onMessageReceived?.({ ...message, type: "error", content: `Unhandled type: ${_exhaustiveCheck}`});
         }
@@ -296,24 +302,35 @@ export const connectWebSocket = (
 };
 
 export const sendWebSocketMessage = (type: WebSocketMessage['type'], content: string, sessionId?: number) => {
+    if (!content || content.trim() === "") {
+    console.warn("🚫 빈 메시지는 전송하지 않습니다.")
+    return
+  }
+  
   if (socket?.readyState !== WebSocket.OPEN) {
     console.error('WebSocket is not connected. Attempting to reconnect...');
     handleReconnect();
     throw new Error('WebSocket is not connected');
   }
 
+
   const memberId = localStorage.getItem('imean_member_id');
   const messagePayload: Partial<WebSocketMessage> = { 
     type, 
-    content,
+    content: content.trim(),
     timestamp: new Date().toISOString(),
-    user_id: memberId || undefined // null을 undefined로 변환
+    user_id: memberId || undefined, // null을 undefined로 변환
+    session_id: sessionId ?? currentSessionId,
   };
   
-  if (type === 'response' && currentSessionId !== undefined) {
-    messagePayload.session_id = currentSessionId;
-  }
-  
+  // if (type === 'response' && currentSessionId !== undefined) {
+  //   messagePayload.session_id = currentSessionId;
+  // }
+
+  // 수정된 코드
+  messagePayload.session_id = sessionId ?? currentSessionId;
+
+
   try {
     socket.send(JSON.stringify(messagePayload));
     console.log('Sent message:', messagePayload);
