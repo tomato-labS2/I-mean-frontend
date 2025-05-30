@@ -16,9 +16,13 @@ export const authApi = {
       }),
     })
     const result: AuthApiResponse = await res.json()
+    console.log("로그인 API 전체 응답:", result)
+    console.log("memberInfo 구조:", result.data?.memberInfo)
+    
     if (!res.ok || !result.success) {
       throw new Error("로그인 실패: " + (result.message || JSON.stringify(result)))
     }
+    
     // 토큰 및 회원 정보 저장
     tokenStorage.setToken(result.data.accessToken)
     tokenStorage.setRefreshToken(result.data.refreshToken)
@@ -27,7 +31,29 @@ export const authApi = {
     tokenStorage.setMemberId(result.data.memberInfo.memberId)
     tokenStorage.setCoupleId(result.data.memberInfo.coupleId)
     tokenStorage.setMemberRole(result.data.memberInfo.memberRole)
-    // memberId, coupleId 등 필요시 저장 확장 가능
+    
+    // 닉네임 저장 - 여러 가능한 필드명 시도
+    const memberInfo = result.data.memberInfo as any;
+    const nickname = memberInfo.memberNickName || 
+                    memberInfo.memberNickname || 
+                    memberInfo.nickname ||
+                    memberInfo.nickName
+    console.log("닉네임 저장 시도:", {
+      memberNickName: memberInfo.memberNickName,
+      memberNickname: memberInfo.memberNickname,
+      nickname: memberInfo.nickname,
+      nickName: memberInfo.nickName,
+      selected: nickname
+    })
+    
+    if (nickname) {
+      tokenStorage.setMemberNickname(nickname)
+      console.log("닉네임 저장 완료:", nickname)
+      console.log("저장 후 localStorage 확인:", tokenStorage.getMemberNickname())
+    } else {
+      console.warn("닉네임 필드를 찾을 수 없습니다:", result.data.memberInfo)
+    }
+    
     return result.data
   },
 
@@ -43,9 +69,13 @@ export const authApi = {
       }),
     })
     const result: AuthApiResponse = await res.json()
+    console.log("회원가입 API 전체 응답:", result)
+    console.log("memberInfo 구조:", result.data?.memberInfo)
+    
     if (!res.ok || !result.success) {
       throw new Error("회원가입 실패: " + (result.message || JSON.stringify(result)))
     }
+    
     tokenStorage.setToken(result.data.accessToken)
     tokenStorage.setRefreshToken(result.data.refreshToken)
     tokenStorage.setMemberCode(result.data.memberInfo.memberCode)
@@ -53,7 +83,29 @@ export const authApi = {
     tokenStorage.setMemberId(result.data.memberInfo.memberId)
     tokenStorage.setCoupleId(result.data.memberInfo.coupleId)
     tokenStorage.setMemberRole(result.data.memberInfo.memberRole)
-    // memberId, coupleId 등 필요시 저장 확장 가능
+    
+    // 닉네임 저장 - 여러 가능한 필드명 시도
+    const memberInfo = result.data.memberInfo as any;
+    const nickname = memberInfo.memberNickName || 
+                    memberInfo.memberNickname || 
+                    memberInfo.nickname ||
+                    memberInfo.nickName
+    console.log("닉네임 저장 시도:", {
+      memberNickName: memberInfo.memberNickName,
+      memberNickname: memberInfo.memberNickname,
+      nickname: memberInfo.nickname,
+      nickName: memberInfo.nickName,
+      selected: nickname
+    })
+    
+    if (nickname) {
+      tokenStorage.setMemberNickname(nickname)
+      console.log("닉네임 저장 완료:", nickname)
+      console.log("저장 후 localStorage 확인:", tokenStorage.getMemberNickname())
+    } else {
+      console.warn("닉네임 필드를 찾을 수 없습니다:", result.data.memberInfo)
+    }
+    
     return result.data
   },
 
@@ -66,7 +118,8 @@ export const authApi = {
     const memberId = tokenStorage.getMemberId()
     const coupleId = tokenStorage.getCoupleId()
     const memberRole = tokenStorage.getMemberRole()
-    
+    const memberNickname = tokenStorage.getMemberNickname()
+
     if (token && memberCode) {
       // 로컬 스토리지의 정보로 User 객체 생성
       return {

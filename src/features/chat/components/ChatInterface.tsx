@@ -98,6 +98,29 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
       const handleSessionUpdate = (wsMessage: WebSocketMessage) => {
         if (!isMounted) return
         console.log(`[ChatInterface ${roomId}] 세션 업데이트:`, wsMessage)
+        
+        // 세션 메시지도 채팅 UI에 표시하도록 처리
+        if (wsMessage.content) {
+          const currentMemberId = tokenStorage.getMemberId()?.toString()
+          let timestamp = wsMessage.timestamp ? new Date(wsMessage.timestamp) : new Date()
+          if (isNaN(timestamp.getTime())) timestamp = new Date()
+
+          let sender: "user" | "partner" | "ai" = "ai" // 세션 메시지는 기본적으로 AI/시스템 메시지로 처리
+          if (wsMessage.user_id && wsMessage.user_id.toString() === currentMemberId) {
+            sender = "user"
+          } else if (wsMessage.user_id) {
+            sender = "partner"
+          }
+          
+          const chatMessage: ChatMessage = {
+            id: wsMessage.session_id ? `session_${wsMessage.session_id}_${Date.now()}` : `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            content: wsMessage.content,
+            sender: sender,
+            timestamp: timestamp,
+            roomId: roomId,
+          }
+          onMessageReceived(chatMessage)
+        }
       }
       
       const handleConnectionSuccess = () => {
@@ -180,11 +203,12 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
   }
 
   const getSenderName = (sender: string) => {
+    const memberNickname = localStorage.getItem("imean_member_nickname")
     switch (sender) {
       case "user":
         return "나"
       case "partner":
-        return "상대방"
+        return memberNickname
       case "ai":
         return "AI 상담사"
       default:

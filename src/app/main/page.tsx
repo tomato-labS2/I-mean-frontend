@@ -63,13 +63,13 @@ export default function MainPage() {
         console.log("[MainPage] 조회/생성 결과:", roomData);
 
         if (roomData.is_existing) {
-          showToast(`기존 채팅방 "${roomData.name}"에 참여합니다.`)
+          // showToast(`기존 채팅방 "${roomData.name}"에 참여합니다.`)
           await new Promise(resolve => setTimeout(resolve, 1000))
           setCurrentChatRoom(roomData.id)
           setIsModalOpen(false)
         } else {
           showToast(`새로운 커플 채팅방 이름을 설정해주세요.`)
-          setInitialRoomName(roomData.name || "커플 채팅")
+          setInitialRoomName(roomData.name || "")
           setIsModalOpen(true)
         }
       } catch (error) {
