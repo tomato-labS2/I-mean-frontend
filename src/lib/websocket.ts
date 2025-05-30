@@ -1,9 +1,6 @@
 import type { ChatMessage } from "@/features/chat/types"; // ChatMessage 타입 임포트
 
 const WEBSOCKET_URL = 'ws://localhost:8000/api/sessions/ws';
-// 다른 가능한 WebSocket URL들:
-// const WEBSOCKET_URL = 'ws://localhost:8000/ws/sessions';
-// const WEBSOCKET_URL = 'ws://localhost:8000/ws';
 
 let socket: WebSocket | null = null;
 let currentSessionId: number | undefined = undefined; // 현재 세션 ID 저장
@@ -305,7 +302,7 @@ export const sendWebSocketMessage = (type: WebSocketMessage['type'], content: st
   const memberId = localStorage.getItem('imean_member_id');
   const messagePayload: Partial<WebSocketMessage> = { 
     type, 
-    content,
+    content: content || "",
     timestamp: new Date().toISOString(),
     user_id: memberId || undefined // null을 undefined로 변환
   };

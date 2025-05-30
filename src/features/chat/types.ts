@@ -9,7 +9,8 @@ export interface ChatRoom {
 export interface ChatMessage {
   id: string
   content: string
-  sender: "user" | "partner" | "ai"
+  sender: "user" | "partner" | "ai" | "system"
+  type?: "message" | "ai_message" | "system" | "session" | "response" | "error" | "chat_history"
   timestamp: Date
   roomId: string
 }

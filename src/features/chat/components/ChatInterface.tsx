@@ -72,9 +72,9 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
           let timestamp = wsMessage.timestamp ? new Date(wsMessage.timestamp) : new Date()
           if (isNaN(timestamp.getTime())) timestamp = new Date()
 
-          let sender: "user" | "partner" | "ai" = "partner"
+          let sender: "user" | "partner" | "ai" | "system" = "partner"
           if (wsMessage.type === "system" || wsMessage.type === "error") {
-            sender = "ai"
+            sender = "system"
           } else if (wsMessage.user_id && wsMessage.user_id.toString() === currentMemberId) {
             sender = "user"
           }
@@ -83,6 +83,7 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
             id: wsMessage.session_id ? `ws_${wsMessage.session_id}_${Date.now()}` : `ws_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             content: wsMessage.content || wsMessage.error || "",
             sender: sender,
+            type: wsMessage.type,
             timestamp: timestamp,
             roomId: roomId,
           }
@@ -182,6 +183,8 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
         return "상대방"
       case "ai":
         return "AI 상담사"
+      case "system":
+        return "시스템"
       default:
         return sender
     }
@@ -256,7 +259,15 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
           <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
             {message.sender !== "user" && (
               <div className="flex-shrink-0 mr-3">
-                {message.sender === "ai" ? <AiAvatar /> : <div className="w-12 h-12 bg-green-200 rounded-full"></div>}
+                {message.sender === "ai" ? (
+                  <AiAvatar />
+                ) : message.sender === "system" ? (
+                  <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center">
+                    <span className="text-lg">🔔</span>
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 bg-green-200 rounded-full"></div>
+                )}
               </div>
             )}
 
@@ -270,7 +281,11 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
               <div className={`flex items-end ${message.sender === "user" ? "flex-row-reverse" : "flex-row"} gap-2`}>
                 <div
                   className={`px-4 py-3 rounded-lg ${
-                    message.sender === "user" ? "bg-green-200 text-gray-800" : "bg-gray-200 text-gray-800"
+                    message.type === "system"
+                      ? "bg-yellow-100 text-gray-800 border border-yellow-200"
+                      : message.sender === "user"
+                      ? "bg-green-200 text-gray-800"
+                      : "bg-gray-200 text-gray-800"
                   }`}
                 >
                   <p className="text-sm leading-relaxed break-all">{message.content}</p>
