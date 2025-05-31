@@ -16,4 +16,5 @@ export interface ChatMessage {
 
 export interface CreateChatRoomData {
   name: string
+  coupleId: number
 }
