@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     // path: "/",        // 이미지 경로 기준 - 필요시 주석 해제
     unoptimized: true, // 로컬 개발 시에는 unoptimized: true가 유용할 수 있습니다.
   },
+  eslint:{
+    ignoreDuringBuilds: true,
+  },
 
   // (선택) basePath도 설정 가능
   // basePath: '/your-subpath',

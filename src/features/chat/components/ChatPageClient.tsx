@@ -10,7 +10,7 @@ interface ChatPageClientProps {
 
 export default function ChatPageClient({ roomId }: ChatPageClientProps) {
   const router = useRouter()
-  const { chatRooms, sendMessage, getMessagesForRoom } = useChat()
+  const { chatRooms, getMessagesForRoom, addMessage, addHistoryMessages } = useChat()
 
   const currentRoom = chatRooms.find((room) => room.id === roomId)
   const messages = getMessagesForRoom(roomId)
@@ -26,10 +26,6 @@ export default function ChatPageClient({ roomId }: ChatPageClientProps) {
     );
   }
 
-  const handleSendMessage = (content: string) => {
-    sendMessage(roomId, content)
-  }
-
   const handleBack = () => {
     // router.push("/"); // 이전에는 홈으로 갔으나, 채팅 목록이나 메인 페이지로 가는 것이 더 적절할 수 있습니다.
     router.push("/main"); // 예: 메인 페이지로 이동
@@ -38,8 +34,11 @@ export default function ChatPageClient({ roomId }: ChatPageClientProps) {
   return (
     <ChatInterface
       roomName={currentRoom.name}
+      roomId={currentRoom.id}
       messages={messages}
-      onSendMessage={handleSendMessage}
+      // onSendMessage={handleSendMessage}
+      onMessageReceived={addMessage}
+      onHistoryReceived={addHistoryMessages}
       onBack={handleBack}
     />
   )
