@@ -29,27 +29,11 @@ export function useCoupleRegister() {
     try {
       console.log("커플 연결 시도 중...", partnerCode)
       await authApi.joinCouple(partnerCode)
-      console.log("커플 연결 성공")
-      showToast("커플 연결이 완료되었습니다! 메인 페이지로 이동합니다.")
-      
-      // 메인 페이지로 리다이렉트
-      setTimeout(() => {
-        console.log("메인 페이지로 리다이렉트...")
-        router.push("/main")
-        
-        // 추가 안전장치
-        setTimeout(() => {
-          if (window.location.pathname !== "/main") {
-            console.log("router.push 실패, window.location 사용...")
-            window.location.href = "/main"
-          }
-        }, 1000)
-      }, 500)
-      
+      showToast("커플 등록에 성공했습니다! 메인 페이지로 이동합니다.")
+      router.push("/main")
     } catch (error) {
       console.error("Couple join failed:", error)
-      const errorMessage = error instanceof Error ? error.message : "커플 연결에 실패했습니다."
-      showToast(errorMessage)
+      showToast("커플 등록에 실패했습니다. 코드를 다시 확인해주세요.")
     } finally {
       setIsLoading(false)
     }

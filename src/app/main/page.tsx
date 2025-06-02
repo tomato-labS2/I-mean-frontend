@@ -1,14 +1,16 @@
 "use client"
 
+import { Menu, LogOut, Heart } from "lucide-react"
 import Image from 'next/image'
 import { useState, useEffect } from "react"
-import { Menu } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { ChatRoomModal } from "@/features/chat/components/ChatRoomModal"
 import { ChatInterface } from "@/features/chat/components/ChatInterface"
 import { BottomNavigation } from "@/features/chat/components/BottomNavigation"
 import { useChat } from "@/features/chat/hooks/useChat"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { useLogout } from "@/features/auth/hooks/useLogout"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 import { useToast } from "@/components/common/Toast"
 
@@ -19,6 +21,9 @@ export default function MainPage() {
   const [hasError, setHasError] = useState(false)
   const [initialRoomName, setInitialRoomName] = useState("")
 
+  const { isAuthenticated } = useAuth()
+  const { logout } = useLogout()
+  const coupleStatus = tokenStorage.getCoupleStatus()
   const { chatRooms, createChatRoom, getMessagesForRoom, addMessage, addHistoryMessages, clearMessagesForRoom } = useChat()
   const { showToast } = useToast()
 
@@ -152,6 +157,20 @@ export default function MainPage() {
         style={{ backgroundImage: "url('/mainpage.png')" }}
       />
 
+      {/* 커플 등록 버튼: 메인 이미지 영역 우측 상단에 고정 */}
+      {isAuthenticated && coupleStatus === "SINGLE" && (
+        <div className="absolute top-8 right-8 z-20">
+          <Link href="/auth/couple-register">
+            <Button
+              className="hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg text-xs sm:text-sm whitespace-nowrap shadow-lg"
+              style={{ backgroundColor: '#55996F' }}
+            >
+              커플 등록
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Content Wrapper */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
@@ -163,15 +182,21 @@ export default function MainPage() {
             <div className="flex-grow flex justify-center">
               <Image src="/images/logo-gr.png" alt="I:mean 로고" width={138} height={36} style={{ objectFit: "contain" }} />
             </div>
-            <Link href="/auth/couple-register" className="ml-2">
-              <Button className="hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg text-xs sm:text-sm whitespace-nowrap" style={{backgroundColor: '#55996F'}}>
-                커플 등록
-              </Button>
-            </Link>
+            <div className="w-10">
+              {isAuthenticated && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={logout}
+                  title="로그아웃"
+                  className="!bg-[#f4e6a1] !text-[#5a9b5a] hover:!bg-[#ffe066] hover:!text-[#3c1e1e] shadow-md border border-[#e0e0e0] transition-all duration-200 flex flex-row items-center gap-2 px-4 py-2 rounded-xl min-w-[1px]"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-
-        
 
         {/* Bottom Navigation */}
         <div className="shadow-sm" style={{ backgroundColor: '#DCE9E2' }}>
