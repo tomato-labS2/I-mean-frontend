@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation" // 사용되지 않으므로 주석 처리
 import { authApi } from "@/features/auth/api/authApi"
 import type { LoginFormData } from "@/features/auth/types"
 import { useToast } from "@/components/common/Toast"
@@ -9,7 +9,7 @@ import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 export function useLogin() {
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  // const router = useRouter() // 사용되지 않으므로 주석 처리
   const { showToast } = useToast()
 
   const login = async (formData: LoginFormData) => {
@@ -28,37 +28,33 @@ export function useLogin() {
         return
       }
       
-      console.log("메인 페이지로 리다이렉션 시작...")
-      console.log("현재 경로:", window.location.pathname)
-      showToast("로그인 성공! 메인 페이지로 이동합니다.")
+      // 로그인 성공 메시지 표시
+      showToast("로그인되었습니다.")
       
-      // 라우터를 사용한 리다이렉션 시도
+      // 토큰이 저장되고 상태가 업데이트될 시간을 주기 위해 약간의 지연을 추가
       setTimeout(() => {
-        console.log("router.replace 실행...")
-        console.log("router.replace 실행 전 경로:", window.location.pathname)
-        router.replace("/main")
-        
-        // 추가 안전장치: 1초 후에도 이동하지 않으면 window.location 사용
-        setTimeout(() => {
-          console.log("router.replace 실행 후 경로:", window.location.pathname)
-          if (window.location.pathname !== "/main") {
-            console.log("router.replace 실패, window.location 사용...")
-            window.location.href = "/main"
-            
-            // 추가 확인
-            setTimeout(() => {
-              console.log("window.location 실행 후 경로:", window.location.pathname)
-            }, 500)
-          } else {
-            console.log("router.replace 성공!")
-          }
-        }, 1000)
+        // 절대 경로로 이동
+        window.location.replace(window.location.origin + "/main")
       }, 500)
+    } catch (error: unknown) { // any 대신 unknown 사용하고 타입 가드 추가
+      console.error("Login failed:", error)
       
-    } catch (error) {
-      console.error("로그인 실패:", error)
-      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
-      showToast(`로그인에 실패했습니다: ${errorMessage}`)
+      // 서버 응답 에러 메시지 처리
+      if (error instanceof Error && error.message) {
+        if (error.message.includes("429")) {
+          showToast("너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.")
+        } else if (error.message.includes("404")) {
+          showToast("등록되지 않은 이메일입니다. 회원가입을 먼저 진행해주세요.")
+        } else if (error.message.includes("401")) {
+          showToast("이메일 또는 비밀번호가 올바르지 않습니다.")
+        } else if (error.message.includes("503")) {
+          showToast("서버가 일시적으로 응답할 수 없습니다. 잠시 후 다시 시도해주세요.")
+        } else {
+          showToast("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.")
+        }
+      } else {
+        showToast("로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+      }
     } finally {
       setIsLoading(false)
     }
