@@ -38,10 +38,10 @@ export function Header({ title, showBack = false, rightElement }: HeaderProps) {
               variant="ghost"
               onClick={logout}
               title="로그아웃"
-              className="!bg-[#f4e6a1] !text-[#5a9b5a] hover:!bg-[#ffe066] hover:!text-[#3c1e1e] shadow-md border border-[#e0e0e0] transition-all duration-200 flex flex-row items-center gap-2 px-6 py-2 rounded-xl min-w-[130px]"
+              className="!bg-[#f4e6a1] !text-[#5a9b5a] hover:!bg-[#ffe066] hover:!text-[#3c1e1e] shadow-md border border-[#e0e0e0] transition-all duration-200 flex flex-row items-center gap-2 px-6 py-2 rounded-xl min-w-[1px]"
             >
               <LogOut className="w-4 h-4" />
-              <span className="align-middle text-center leading-tight">로그아웃</span>
+              <span className="align-middle text-center leading-tight"></span>
             </Button>
           ) : null
         )}

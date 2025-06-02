@@ -3,11 +3,13 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { authApi } from "@/features/auth/api/authApi"
+import { useToast } from "@/components/common/Toast"
 
 export function useCoupleRegister() {
   const [isLoading, setIsLoading] = useState(false)
   const [coupleCode, setCoupleCode] = useState<string | null>(null)
   const router = useRouter()
+  const { showToast } = useToast()
 
   const generateCode = async () => {
     setIsLoading(true)
@@ -26,11 +28,11 @@ export function useCoupleRegister() {
     setIsLoading(true)
     try {
       await authApi.joinCouple(partnerCode)
-      router.push("/chat")
-      // Toast 성공 메시지 표시
+      showToast("커플 등록에 성공했습니다! 메인 페이지로 이동합니다.")
+      router.push("/main")
     } catch (error) {
       console.error("Couple join failed:", error)
-      // Toast 에러 메시지 표시
+      showToast("커플 등록에 실패했습니다. 코드를 다시 확인해주세요.")
     } finally {
       setIsLoading(false)
     }
