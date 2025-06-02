@@ -5,6 +5,7 @@ const COUPLE_STATUS_KEY = "imean_couple_status"
 const MEMBER_ID_KEY = "imean_member_id"
 const COUPLE_ID_KEY = "imean_couple_id"
 const MEMBER_ROLE_KEY = "imean_member_role"
+const MEMBER_NICKNAME_KEY = "imean_member_nickname"
 
 export const tokenStorage = {
   setToken(token: string) {
@@ -105,6 +106,19 @@ export const tokenStorage = {
     return null
   },
 
+  setMemberNickname(nickname: string) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(MEMBER_NICKNAME_KEY, nickname)
+    }
+  },
+  
+  getMemberNickname() {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(MEMBER_NICKNAME_KEY)
+    }
+    return null
+  },
+
   clear() {
     if (typeof window !== "undefined") {
       localStorage.removeItem(TOKEN_KEY)
@@ -114,6 +128,7 @@ export const tokenStorage = {
       localStorage.removeItem(MEMBER_ID_KEY)
       localStorage.removeItem(COUPLE_ID_KEY)
       localStorage.removeItem(MEMBER_ROLE_KEY)
+      localStorage.removeItem(MEMBER_NICKNAME_KEY)
     }
   },
 }

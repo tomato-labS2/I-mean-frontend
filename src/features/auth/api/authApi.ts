@@ -2,7 +2,7 @@ import type { LoginFormData, RegisterFormData, AuthApiResponse, User } from "@/f
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 const API_BASE = "http://localhost:8080/api"
-// const API_BASE = "http://59.13.225.242:8080/api"
+
 
 export const authApi = {
   login: async (data: LoginFormData): Promise<AuthApiResponse["data"]> => {
@@ -15,9 +15,13 @@ export const authApi = {
       }),
     })
     const result: AuthApiResponse = await res.json()
+    console.log("로그인 API 전체 응답:", result)
+    console.log("memberInfo 구조:", result.data?.memberInfo)
+    
     if (!res.ok || !result.success) {
       throw new Error("로그인 실패: " + (result.message || JSON.stringify(result)))
     }
+    
     // 토큰 및 회원 정보 저장
     tokenStorage.setToken(result.data.accessToken)
     tokenStorage.setRefreshToken(result.data.refreshToken)
@@ -26,6 +30,7 @@ export const authApi = {
     tokenStorage.setMemberId(result.data.memberInfo.memberId)
     tokenStorage.setCoupleId(result.data.memberInfo.coupleId)
     tokenStorage.setMemberRole(result.data.memberInfo.memberRole)
+    
     return result.data
   },
 
@@ -41,9 +46,13 @@ export const authApi = {
       }),
     })
     const result: AuthApiResponse = await res.json()
+    console.log("회원가입 API 전체 응답:", result)
+    console.log("memberInfo 구조:", result.data?.memberInfo)
+    
     if (!res.ok || !result.success) {
       throw new Error("회원가입 실패: " + (result.message || JSON.stringify(result)))
     }
+    
     tokenStorage.setToken(result.data.accessToken)
     tokenStorage.setRefreshToken(result.data.refreshToken)
     tokenStorage.setMemberCode(result.data.memberInfo.memberCode)
@@ -51,11 +60,13 @@ export const authApi = {
     tokenStorage.setMemberId(result.data.memberInfo.memberId)
     tokenStorage.setCoupleId(result.data.memberInfo.coupleId)
     tokenStorage.setMemberRole(result.data.memberInfo.memberRole)
+
     return result.data
   },
 
   getProfile: async (): Promise<User> => {
     const token = tokenStorage.getToken()
+
     const res = await fetch(`${API_BASE}/member/profile`, {
       method: "GET",
       headers: {
@@ -63,8 +74,15 @@ export const authApi = {
         Authorization: `Bearer ${token}`,
       },
     })
+    
+    if (!res.ok) {
+      // API 호출 실패 시 토큰 클리어
+      tokenStorage.clear()
+      throw new Error("인증 정보가 유효하지 않습니다.")
+    }
+    
     const result = await res.json()
-    if (!res.ok || !result.success) {
+    if (!result.success) {
       throw new Error(result.message || "사용자 정보 조회 실패")
     }
     return result.data as User
