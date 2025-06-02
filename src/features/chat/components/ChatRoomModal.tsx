@@ -6,31 +6,43 @@ interface ChatRoomModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: (roomName: string) => void
+  initialValue?: string
 }
 
-export const ChatRoomModal = ({ isOpen, onClose, onConfirm }: ChatRoomModalProps) => {
-  const [roomName, setRoomName] = useState("")
+export const ChatRoomModal = ({ isOpen, onClose, onConfirm, initialValue = "" }: ChatRoomModalProps) => {
+  const [roomName, setRoomName] = useState(initialValue)
   const maxLength = 50
   const inputRef = useRef<HTMLInputElement>(null); // 입력 필드 참조
 
   // 모달이 열릴 때 입력 필드에 포커스
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+    if (isOpen) {
+      // 모달이 열릴 때 initialValue를 사용하여 roomName 상태를 설정
+      // 이렇게 하면 모달이 다시 열릴 때마다 initialValue로 업데이트됨
+      setRoomName(initialValue || "")
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    } else {
+      // 모달이 닫힐 때 roomName을 초기화 (선택적)
+      // setRoomName(initialValue || ""); 
     }
-  }, [isOpen]);
+  }, [isOpen, initialValue]);
 
   const handleConfirm = useCallback(() => {
     if (roomName.trim()) {
       onConfirm(roomName.trim())
-      setRoomName("") // 확인 후 입력 필드 초기화
-      // onClose(); // onClose는 onConfirm 이후 부모에서 처리하도록 둘 수 있음
+      // 확인 후 입력 필드 초기화는 모달이 닫히거나 다음에 열릴 때 initialValue에 의해 처리되도록
+      // setRoomName(""); // 이 부분을 제거하거나, initialValue로 리셋하도록 변경
+    } else {
+      // 사용자에게 이름을 입력하라는 피드백을 줄 수 있음 (예: input 테두리 변경)
     }
   }, [roomName, onConfirm]); // roomName과 onConfirm에 의존
 
   const handleCancel = useCallback(() => {
-    setRoomName("") // 취소 시 입력 필드 초기화
     onClose()
+    // 취소 시에도 입력 필드를 initialValue로 리셋하거나 비울 수 있음
+    // setRoomName(initialValue || ""); 
   }, [onClose]); // onClose에 의존
 
   // Enter 키로 확인 기능
