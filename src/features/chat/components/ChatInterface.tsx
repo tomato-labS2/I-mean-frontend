@@ -230,13 +230,13 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
   )
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen" style={{ backgroundColor: '#FFFDF6' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center">
+      <div className="border-b border-gray-200 px-4 py-3 flex items-center" style={{ backgroundColor: '#DCE9E2' }}>
         <button onClick={onBack} className="mr-3">
           <ArrowLeft className="w-6 h-6 text-gray-600" />
         </button>
-        <h1 className="text-lg font-medium text-gray-800 flex-1">{roomName}</h1>
+        <h1 className="text-lg font-medium text-gray-800 flex-1 text-center">{roomName}</h1>
         
         {/* 연결 상태 표시 */}
         <div className={`w-3 h-3 rounded-full mr-3 ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
@@ -253,20 +253,22 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
       {systemPrompt && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-semibold mb-4">시스템 메시지</h3>
+            <h3 className="text-lg font-semibold mb-4">AI 상담사 메시지</h3>
             <p className="text-gray-700 mb-6">{systemPrompt.message}</p>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => handleSystemResponse("네")}
-                className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                className="w-full px-4 py-2 rounded-lg text-base font-medium"
+                style={{ backgroundColor: '#C6DABA', color: '#222' }}
               >
-                네
+                네. 아직 시간이 더 필요합니다.
               </button>
               <button
                 onClick={() => handleSystemResponse("아니요")}
-                className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+                className="w-full px-4 py-2 rounded-lg text-base font-medium"
+                style={{ backgroundColor: '#555', color: '#fff' }}
               >
-                아니요
+                아니요. 다음으로 넘어가도 좋습니다.
               </button>
             </div>
           </div>
@@ -299,8 +301,9 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
               <div className={`flex items-end ${message.sender === "user" ? "flex-row-reverse" : "flex-row"} gap-2`}>
                 <div
                   className={`px-4 py-3 rounded-lg ${
-                    message.sender === "user" ? "bg-green-200 text-gray-800" : "bg-gray-200 text-gray-800"
+                    message.sender === "user" ? "text-gray-800" : "bg-gray-200 text-gray-800"
                   }`}
+                  style={message.sender === "user" ? { backgroundColor: '#C6DABA' } : {}}
                 >
                   <p className="text-sm leading-relaxed break-all">{message.content}</p>
                 </div>

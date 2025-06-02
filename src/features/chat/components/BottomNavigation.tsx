@@ -45,7 +45,7 @@ export const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationPro
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+    <div className="fixed bottom-0 left-0 right-0" style={{ backgroundColor: '#DCE9E2'}}>
       <div className="flex">
         {tabs.map((tab) => {
           const Icon = tab.icon

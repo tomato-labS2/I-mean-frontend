@@ -1,5 +1,6 @@
 "use client"
 
+import Image from 'next/image'
 import { useState, useEffect } from "react"
 import { Menu } from "lucide-react"
 import Link from "next/link"
@@ -144,49 +145,43 @@ export default function MainPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3">
-          <button className="p-2">
-            <Menu className="w-6 h-6 text-gray-600" />
-          </button>
-          <div className="text-center">
-            <h1 className="text-xl font-bold text-green-600">I:mean</h1>
-            <p className="text-xs text-gray-500">couple counseling</p>
-          </div>
-          <div className="w-10"></div>
-        </div>
-      </div>
+    <div className="relative min-h-screen">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-contain bg-center bg-no-repeat z-0"
+        style={{ backgroundImage: "url('/mainpage.png')" }}
+      />
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 pb-20">
-        <div className="text-center">
-          <div className="w-32 h-32 bg-green-200 rounded-full mx-auto mb-8 flex items-center justify-center">
-            <span className="text-4xl">💑</span>
+      {/* Content Wrapper */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Header */}
+        <div className="shadow-sm" style={{ backgroundColor: '#DCE9E2' }}>
+          <div className="flex items-center justify-between px-4 py-3">
+            <button className="p-2">
+              <Menu className="w-6 h-6 text-gray-600" />
+            </button>
+            <div className="flex-grow flex justify-center">
+              <Image src="/images/logo-gr.png" alt="I:mean 로고" width={138} height={36} style={{ objectFit: "contain" }} />
+            </div>
+            <Link href="/auth/couple-register" className="ml-2">
+              <Button className="hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg text-xs sm:text-sm whitespace-nowrap" style={{backgroundColor: '#55996F'}}>
+                커플 등록
+              </Button>
+            </Link>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">AI 상담사와 함께하는</h2>
-          <h2 className="text-2xl font-bold text-gray-800 mb-8">커플 채팅</h2>
-          <p className="text-gray-600 mb-8">
-            하단의 채팅 아이콘을 눌러
-            <br />
-            새로운 채팅방을 시작해보세요
-          </p>
-          
-          <Link href="/auth/couple-register" className="block">
-            <Button className="w-full max-w-xs h-12 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
-              커플 등록
-            </Button>
-          </Link>
         </div>
-      </div>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+        
+
+        {/* Bottom Navigation */}
+        <div className="shadow-sm" style={{ backgroundColor: '#DCE9E2' }}>
+          <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+        </div>
+      </div> {/* End of Content Wrapper */}
 
       {/* Chat Room Creation Modal */}
       <ChatRoomModal 
-        isOpen={isModalOpen} 
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)} 
         onConfirm={handleConfirmAndCreateRoom} 
         initialValue={initialRoomName} 
