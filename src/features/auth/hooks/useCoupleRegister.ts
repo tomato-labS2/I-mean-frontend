@@ -27,6 +27,7 @@ export function useCoupleRegister() {
   const joinCouple = async (partnerCode: string) => {
     setIsLoading(true)
     try {
+      console.log("커플 연결 시도 중...", partnerCode)
       await authApi.joinCouple(partnerCode)
       showToast("커플 등록에 성공했습니다! 메인 페이지로 이동합니다.")
       router.push("/main")

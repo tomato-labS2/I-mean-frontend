@@ -15,9 +15,15 @@ export function useLogin() {
   const login = async (formData: LoginFormData) => {
     setIsLoading(true)
     try {
-      await authApi.login(formData)
+      console.log("로그인 시도 중...", formData.email)
+      const loginResult = await authApi.login(formData)
+      console.log("로그인 API 성공:", loginResult)
+      
       const token = tokenStorage.getToken()
+      console.log("저장된 토큰 확인:", token ? "토큰 존재" : "토큰 없음")
+      
       if (!token) {
+        console.error("토큰 저장 실패")
         showToast("로그인 토큰 저장에 실패했습니다. 다시 시도해주세요.")
         return
       }
