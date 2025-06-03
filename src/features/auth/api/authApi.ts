@@ -317,4 +317,39 @@ export const authApi = {
     }
     return result.data
   },
+
+  getCouplePollingStatus: async (userId: string): Promise<{ status: number; data: any }> => {
+    const token = tokenStorage.getToken();
+    const res = await fetch(`${API_BASE}/couple/status?userId=${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.status === 204) {
+      return { status: 204, data: null };
+    }
+
+    const responseText = await res.text(); // 응답을 텍스트로 먼저 받음
+    if (!res.ok) {
+      // "matched_with:" 형태의 문자열 응답 처리
+      if (res.status === 200 && responseText.startsWith("matched_with:")) {
+         return { status: 200, data: { message: responseText } };
+      }
+      throw new Error(`커플 상태 조회 실패: ${res.status} ${responseText}`);
+    }
+
+    try {
+      const result = JSON.parse(responseText); // JSON으로 파싱 시도
+      return { status: res.status, data: result };
+    } catch (e) {
+      // JSON 파싱 실패 시, 문자열 응답 그대로 반환 (예: "matched_with:")
+      if (responseText.startsWith("matched_with:")) {
+        return { status: 200, data: { message: responseText } };
+      }
+      throw new Error(`커플 상태 조회 응답 파싱 실패: ${responseText}`);
+    }
+  },
 }

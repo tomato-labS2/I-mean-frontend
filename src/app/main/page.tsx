@@ -199,12 +199,6 @@ export default function MainPage() {
             <br />
             새로운 채팅방을 시작해보세요
           </p>
-          
-          <Link href="/auth/couple-register" className="block">
-            <Button className="w-full max-w-xs h-12 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
-              커플 등록
-            </Button>
-          </Link>
         </div>
       </div>
 
