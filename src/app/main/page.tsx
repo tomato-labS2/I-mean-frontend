@@ -1,6 +1,6 @@
 "use client"
 
-import { Menu, LogOut, Heart } from "lucide-react"
+import { Menu, LogOut, Heart, X } from "lucide-react"
 import Image from 'next/image'
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -20,6 +20,8 @@ export default function MainPage() {
   const [currentChatRoom, setCurrentChatRoom] = useState<string | null>(null)
   const [hasError, setHasError] = useState(false)
   const [initialRoomName, setInitialRoomName] = useState("")
+  const [isCoupleRegisterModalOpen, setIsCoupleRegisterModalOpen] = useState(false)
+
   const { isAuthenticated } = useAuth()
   const { logout } = useLogout()
   const coupleStatus = tokenStorage.getCoupleStatus()
@@ -31,10 +33,14 @@ export default function MainPage() {
     console.log("현재 URL:", window.location.href)
     console.log("현재 경로:", window.location.pathname)
     
+    if (isAuthenticated && coupleStatus === "SINGLE") {
+      setIsCoupleRegisterModalOpen(true)
+    }
+    
     return () => {
       console.log("메인 페이지 언마운트됨")
     }
-  }, [])
+  }, [isAuthenticated, coupleStatus])
 
   if (hasError) {
     return (
@@ -156,17 +162,33 @@ export default function MainPage() {
         style={{ backgroundImage: "url('/mainpage.png')" }}
       />
 
-      {/* 커플 등록 버튼: 메인 이미지 영역 우측 상단에 고정 */}
-      {isAuthenticated && coupleStatus === "SINGLE" && (
-        <div className="absolute top-8 right-8 z-20">
-          <Link href="/auth/couple-register">
-            <Button
-              className="hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg text-xs sm:text-sm whitespace-nowrap shadow-lg"
-              style={{ backgroundColor: '#55996F' }}
-            >
-              커플 등록
-            </Button>
-          </Link>
+      {/* 커플 등록 팝업 */}
+      {isAuthenticated && coupleStatus === "SINGLE" && isCoupleRegisterModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">커플 등록 안내</h2>
+              <button 
+                onClick={() => setIsCoupleRegisterModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="닫기"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <p className="text-gray-700 mb-6">
+              아직 커플 등록을 하지 않으셨다면, 채팅을 위해 커플 등록을 진행해주세요!
+            </p>
+            <Link href="/auth/couple-register" passHref>
+              <Button
+                onClick={() => setIsCoupleRegisterModalOpen(false)}
+                className="w-full hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-full text-sm sm:text-sm whitespace-nowrap shadow-lg"
+                style={{ backgroundColor: '#55996F' }}
+              >
+                커플 등록하러 가기
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
 
