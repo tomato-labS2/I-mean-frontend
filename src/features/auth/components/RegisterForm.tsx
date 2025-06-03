@@ -270,30 +270,36 @@ const resendEmailCode = async () => {"use client"}
             />
             {errors.email && <p className="text-red-500 text-xs mt-1 px-2">{errors.email}</p>}
             
-            <div className="flex gap-2 mt-2">
-              <Button 
-                type="button" 
-                onClick={sendEmailCode} 
-                disabled={isSending || isRateLimited || !formData.email || !!errors.email || isEmailVerified} 
-                className="flex-1 h-10 bg-[#f4e6a1] text-[#5a5a5a] rounded-xl disabled:opacity-50"
-              >
-                {isSending ? "발송 중..." : 
-                 isRateLimited ? `대기 중 (${formatTime(rateLimitRemainingTime)})` : 
-                 "인증 코드 발송"}
-              </Button>
-              {isEmailSent && !isEmailVerified && (
-                <Button 
-                  type="button" 
-                  onClick={resendEmailCode} 
-                  disabled={isResending || isRateLimited} 
-                  className="flex-1 h-10 bg-[#f4e6a1] text-[#5a5a5a] rounded-xl disabled:opacity-50"
-                >
-                  {isResending ? "재발송 중..." : 
-                   isRateLimited ? `대기 중 (${formatTime(rateLimitRemainingTime)})` : 
-                   "재발송"}
-                </Button>
-              )}
-            </div>
+            {!isEmailVerified && (
+              <div className="mt-2">
+                <div className="flex gap-2">
+                  {!isEmailSent && (
+                    <Button 
+                      type="button" 
+                      onClick={sendEmailCode} 
+                      disabled={isSending || isRateLimited || !formData.email || !!errors.email}
+                      className="flex-1 h-10 bg-[#f4e6a1] text-[#5a5a5a] rounded-xl disabled:opacity-50"
+                    >
+                      {isSending ? "발송 중..." : 
+                       isRateLimited ? `대기 중 (${formatTime(rateLimitRemainingTime)})` : 
+                       "인증 코드 발송"}
+                    </Button>
+                  )}
+                  {isEmailSent && !isEmailVerified && (
+                    <Button 
+                      type="button" 
+                      onClick={resendEmailCode} 
+                      disabled={isResending || isRateLimited} 
+                      className="flex-1 h-10 bg-[#f4e6a1] text-[#5a5a5a] rounded-xl disabled:opacity-50"
+                    >
+                      {isResending ? "재발송 중..." : 
+                       isRateLimited ? `대기 중 (${formatTime(rateLimitRemainingTime)})` : 
+                       "재발송"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
             
             {/* ⚠️ Rate Limit 안내 메시지 추가 */}
             {!isEmailVerified && (
