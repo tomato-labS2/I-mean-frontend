@@ -221,15 +221,6 @@ export function CoupleCodeForm() {
           </Button>
         </form>
       )}
-
-      <div className="text-center">
-        <div className="text-sm text-[#999]">
-          개인으로 가입하시나요?{" "}
-          <Link href="/register" className="text-[#5a9b5a] font-semibold underline underline-offset-2">
-            일반 회원가입
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }
