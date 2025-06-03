@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Input"
 import { useCoupleRegister } from "@/features/auth/hooks/useCoupleRegister"
 import { Heart, Copy } from "lucide-react"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
+import { useToast } from "@/components/common/Toast"
 
 const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY as string;
 
@@ -25,6 +26,7 @@ export function CoupleCodeForm() {
   const [partnerCode, setPartnerCode] = useState("")
   const [mode, setMode] = useState<"generate" | "join">("generate")
   const [memberCode, setMemberCode] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   const handleJoinCouple = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,9 +34,9 @@ export function CoupleCodeForm() {
   }
 
   const copyToClipboard = async () => {
-    if (coupleCode) {
-      await navigator.clipboard.writeText(coupleCode)
-      // Toast 알림 추가 가능
+    if (memberCode) {
+      await navigator.clipboard.writeText(memberCode)
+      showToast("커플 코드가 복사되었습니다.")
     }
   }
 

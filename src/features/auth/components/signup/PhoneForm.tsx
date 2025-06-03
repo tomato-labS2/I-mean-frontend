@@ -56,9 +56,13 @@ export default function PhoneForm() {
       // 성공 시 로그인 페이지로 이동
       alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
       router.push(STEP_CONFIG.phone.nextPath);
-    } catch (error) {
+    } catch (error: any) {
       console.error('에러:', error);
-      setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setIsLoading(false);
     }
