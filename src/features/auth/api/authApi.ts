@@ -3,7 +3,6 @@ import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 // const API_BASE = "http://localhost:8080/api"
 const API_BASE = "http://localhost:8080/api"
-// const API_BASE = "http://59.13.225.242:8000/api"
 
 export const authApi = {
   login: async (data: LoginFormData): Promise<AuthApiResponse["data"]> => {
@@ -158,7 +157,22 @@ export const authApi = {
   },
 
   // 현재 사용자의 memberCode를 가져오는 함수 (커플 코드 생성용)
+  // 현재 사용자의 memberCode를 가져오는 함수 (커플 코드 생성용)
   generateCoupleCode: async (): Promise<{ code: string }> => {
+    const token = tokenStorage.getToken()
+    const res = await fetch(`${API_BASE}/member/profile`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    const result = await res.json()
+    if (!res.ok || !result.success) {
+      throw new Error(result.message || "사용자 정보 조회 실패")
+    }
+    // 현재 사용자의 memberCode를 반환
+    return { code: result.data.memberCode }
     const token = tokenStorage.getToken()
     const res = await fetch(`${API_BASE}/member/profile`, {
       method: "GET",
@@ -188,6 +202,17 @@ export const authApi = {
     const result: AuthApiResponse = await res.json()
     if (!res.ok || !result.success) {
       throw new Error("커플 등록 실패: " + (result.message || JSON.stringify(result)))
+    }
+    // 커플 등록 후 새로운 토큰으로 업데이트
+    if (result.data?.accessToken) {
+      tokenStorage.setToken(result.data.accessToken)
+    }
+    if (result.data?.refreshToken) {
+      tokenStorage.setRefreshToken(result.data.refreshToken)
+    }
+    if (result.data?.memberInfo) {
+      tokenStorage.setCoupleStatus(result.data.memberInfo.coupleStatus)
+      tokenStorage.setCoupleId(result.data.memberInfo.coupleId)
     }
     // 커플 등록 후 새로운 토큰으로 업데이트
     if (result.data?.accessToken) {
