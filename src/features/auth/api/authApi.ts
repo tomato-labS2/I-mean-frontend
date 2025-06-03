@@ -157,6 +157,7 @@ export const authApi = {
   },
 
   // 현재 사용자의 memberCode를 가져오는 함수 (커플 코드 생성용)
+  // 현재 사용자의 memberCode를 가져오는 함수 (커플 코드 생성용)
   generateCoupleCode: async (): Promise<{ code: string }> => {
     const token = tokenStorage.getToken()
     const res = await fetch(`${API_BASE}/member/profile`, {
@@ -327,7 +328,6 @@ export const authApi = {
     }
     return result.data
   },
-
   getCouplePollingStatus: async (memberID: string): Promise<{ status: number; data: any }> => {
     try {
       const res = await fetch(`${API_BASE}/couple/status?memberID=${memberID}`, {
@@ -363,5 +363,4 @@ export const authApi = {
       throw error;
     }
   }
-
 }

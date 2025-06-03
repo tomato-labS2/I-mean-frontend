@@ -1,5 +1,6 @@
 "use client"
 
+
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/features/auth/api/authApi';
@@ -8,11 +9,14 @@ import { useToast } from "@/components/common/Toast";
 
 const POLLING_INTERVAL = 3000; // 3 seconds
 
+
 export function usePolling(initialMemberID?: string | null) {
+
   const router = useRouter();
   const { showToast } = useToast();
   const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   
   // 🆕 중복 처리 방지를 위한 상태들
   const [isProcessingMatch, setIsProcessingMatch] = useState(false);
