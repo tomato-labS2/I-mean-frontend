@@ -20,7 +20,6 @@ export default function MainPage() {
   const [currentChatRoom, setCurrentChatRoom] = useState<string | null>(null)
   const [hasError, setHasError] = useState(false)
   const [initialRoomName, setInitialRoomName] = useState("")
-
   const { isAuthenticated } = useAuth()
   const { logout } = useLogout()
   const coupleStatus = tokenStorage.getCoupleStatus()
