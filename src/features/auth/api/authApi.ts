@@ -173,20 +173,6 @@ export const authApi = {
     }
     // 현재 사용자의 memberCode를 반환
     return { code: result.data.memberCode }
-    const token = tokenStorage.getToken()
-    const res = await fetch(`${API_BASE}/member/profile`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    const result = await res.json()
-    if (!res.ok || !result.success) {
-      throw new Error(result.message || "사용자 정보 조회 실패")
-    }
-    // 현재 사용자의 memberCode를 반환
-    return { code: result.data.memberCode }
   },
 
   joinCouple: async (targetMemberCode: string): Promise<AuthApiResponse["data"]> => {
