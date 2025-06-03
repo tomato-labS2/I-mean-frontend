@@ -1,112 +1,213 @@
 "use client"
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/features/auth/api/authApi';
-import { tokenStorage } from '@/features/auth/utils/tokenStorage'; // For userId if needed, or pass as prop
+import { tokenStorage } from '@/features/auth/utils/tokenStorage';
 import { useToast } from "@/components/common/Toast";
 
 const POLLING_INTERVAL = 3000; // 3 seconds
 
-export function usePolling(userId?: string | null) {
+export function usePolling(initialMemberID?: string | null) {
   const router = useRouter();
   const { showToast } = useToast();
   const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // 🆕 중복 처리 방지를 위한 상태들
+  const [isProcessingMatch, setIsProcessingMatch] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isMatchedRef = useRef(false); // 이미 매칭 처리되었는지 확인
 
-  // Ensure effectiveUserId is always a string for the API call
-  const getEffectiveUserId = useCallback((): string | null => {
-    const idFromParam = userId;
+  const getEffectiveMemberID = useCallback((): string | null => {
+    const idFromParam = initialMemberID;
     const idFromStorage = tokenStorage.getMemberId();
     if (idFromParam) return String(idFromParam);
     if (idFromStorage) return String(idFromStorage);
     return null;
-  }, [userId]);
+  }, [initialMemberID]);
 
-  const checkStatus = useCallback(async () => {
-    const currentUserId = getEffectiveUserId();
-    if (!currentUserId) {
-      console.warn('Polling: User ID is not available.');
+  // 🆕 interval 정리 함수
+  const clearPollingInterval = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      console.log('Polling interval cleared.');
+    }
+  }, []);
+
+  // 🆕 매칭 성공 처리 함수 (중복 방지)
+  const handleMatchSuccess = useCallback(async (responseData: any) => {
+    // 이미 처리 중이거나 이미 매칭 처리되었으면 중단
+    if (isProcessingMatch || isMatchedRef.current) {
+      console.log('[usePolling] Match already being processed or completed. Skipping.');
       return;
     }
 
-    console.log(`Polling for couple status for userId: ${currentUserId}`);
+    console.log('[usePolling] Starting match processing...');
+    setIsProcessingMatch(true);
+    isMatchedRef.current = true;
+    
+    // 🔴 즉시 폴링 중단
+    setIsPolling(false);
+    clearPollingInterval();
+
     try {
-      const response = await authApi.getCouplePollingStatus(currentUserId);
+      // 🔄 JWT 토큰 갱신
+      console.log('[usePolling] Refreshing JWT token...');
+      const currentRefreshToken = tokenStorage.getRefreshToken();
+      
+      if (currentRefreshToken) {
+        try {
+          const refreshTokenResponse = await authApi.refreshToken(currentRefreshToken);
+          if (refreshTokenResponse.accessToken) {
+            tokenStorage.setToken(refreshTokenResponse.accessToken);
+            console.log('[usePolling] New access token stored successfully.');
+          } else {
+            console.warn('[usePolling] Refresh token API did not return a new access token.');
+          }
+        } catch (refreshError) {
+          console.error('[usePolling] Failed to refresh token after match:', refreshError);
+          // 토큰 리프레시 실패해도 매칭 성공 처리는 계속 진행
+        }
+      } else {
+        console.warn('[usePolling] No refresh token found to refresh JWT.');
+      }
+
+      // 🔄 로컬 상태 업데이트
+      tokenStorage.setCoupleStatus('COUPLED');
+      
+      if (responseData?.partnerId !== undefined && responseData?.partnerId !== null) {
+        tokenStorage.setCoupleId(Number(responseData.partnerId));
+        console.log(`[usePolling] Partner ID stored: ${responseData.partnerId}`);
+      }
+
+      // 🎉 성공 알림 (한 번만)
+      showToast('커플 매칭 성공! 새로운 정보를 반영하여 메인 페이지로 이동합니다.');
+      
+      // 🚀 메인 페이지로 이동 (약간의 지연 후)
+      setTimeout(() => {
+        router.replace('/main');
+      }, 1000);
+
+    } catch (error) {
+      console.error('[usePolling] Error during match processing:', error);
+      setIsProcessingMatch(false);
+      // 에러가 발생해도 isMatchedRef는 리셋하지 않음 (중복 처리 방지)
+    }
+  }, [isProcessingMatch, clearPollingInterval, showToast, router]);
+
+  const checkStatus = useCallback(async () => {
+    // 이미 매칭 처리되었거나 처리 중이면 중단
+    if (isMatchedRef.current || isProcessingMatch) {
+      console.log('[usePolling] Match already processed or processing. Skipping check.');
+      return;
+    }
+
+    const currentMemberID = getEffectiveMemberID();
+    if (!currentMemberID) {
+      console.warn('Polling: Member ID is not available.');
+      return;
+    }
+
+    console.log(`Polling for couple status for memberID: ${currentMemberID}`);
+    try {
+      const response = await authApi.getCouplePollingStatus(currentMemberID);
       console.log('Polling response:', response);
 
-      if (response.status === 200) {
-        if (response.data?.message?.startsWith('matched_with:') || (response.data?.success && response.data?.data?.coupleStatus === 'COUPLED')) {
-          showToast('커플 매칭 성공! 메인 페이지로 이동합니다.');
-          tokenStorage.setCoupleStatus('COUPLED');
-          if(response.data?.data?.coupleId !== undefined && response.data?.data?.coupleId !== null) {
-            tokenStorage.setCoupleId(Number(response.data.data.coupleId)); // Ensure number
-          } else if (response.data?.message?.startsWith('matched_with:')) {
-            const partnerIdStr = response.data.message.split(':')[1];
-            const partnerIdNum = parseInt(partnerIdStr, 10);
-            if (!isNaN(partnerIdNum)) {
-                // If partnerId from string can be parsed to a number, consider it as coupleId
-                // This part depends on your API contract. If partnerId IS the coupleId:
-                // tokenStorage.setCoupleId(partnerIdNum);
-                console.log('Matched with partnerId (from string response, parsed to number):', partnerIdNum);
-            } else {
-                console.warn('Could not parse partnerId from matched_with string to a number:', partnerIdStr);
-            }
-          }
-          router.replace('/main');
-          setIsPolling(false);
-          return;
-        } else if (response.data?.message) { // Other 200 OK messages that are not a match
-          console.log('Polling status update:', response.data.message);
+      if (response.status === 200 && response.data) {
+        let isMatch = false;
+        
+        if (response.data.matched === true) {
+          isMatch = true;
+        } else if (response.data.message?.startsWith('matched_with:')) {
+          // Fallback for old string-based match message
+          isMatch = true;
+        }
+
+        if (isMatch) {
+          console.log('[usePolling] Match detected!');
+          await handleMatchSuccess(response.data);
+          return; // 함수 종료
+        } else if (response.data.message) { 
+          console.log('Polling status update (message):', response.data.message);
+        } else {
+          console.log('Polling: 200 OK but no match detected in JSON structure.', response.data);
         }
       } else if (response.status === 204) {
         console.log('Polling: No content, still waiting for match.');
         // Keep polling
       } else {
-        // Handle other non-200/204 statuses if necessary
         console.error('Polling: Unexpected status code:', response.status);
-        // setError(`Unexpected status: ${response.status}`);
-        // Potentially stop polling for certain errors
       }
     } catch (err: any) {
-      console.error('Polling error:', err);
-      // setError(err.message || 'Failed to fetch couple status.');
-      // Decide if polling should stop on error
-      // setIsPolling(false); 
+      console.error('Polling error in checkStatus:', err);
     }
-  }, [getEffectiveUserId, router, showToast]);
+  }, [getEffectiveMemberID, handleMatchSuccess, isProcessingMatch]);
 
+  // 🆕 개선된 useEffect (interval 관리)
   useEffect(() => {
-    const currentUserId = getEffectiveUserId();
-    if (!isPolling || !currentUserId) {
+    const currentMemberID = getEffectiveMemberID();
+    
+    // 폴링이 비활성화되었거나 memberID가 없거나 이미 매칭되었으면 정리
+    if (!isPolling || !currentMemberID || isMatchedRef.current) {
+      clearPollingInterval();
       return;
     }
 
-    checkStatus(); // Initial check
-    const intervalId = setInterval(checkStatus, POLLING_INTERVAL);
+    console.log('Starting polling interval for memberID:', currentMemberID);
+    
+    // 즉시 한 번 체크
+    checkStatus();
+    
+    // interval 시작
+    intervalRef.current = setInterval(checkStatus, POLLING_INTERVAL);
 
+    // cleanup 함수
     return () => {
-      clearInterval(intervalId);
-      console.log('Polling interval cleared.');
+      clearPollingInterval();
     };
-  }, [isPolling, checkStatus, getEffectiveUserId]);
+  }, [isPolling, checkStatus, getEffectiveMemberID, clearPollingInterval]);
 
   const startPolling = useCallback(() => {
-    const currentUserId = getEffectiveUserId();
-    if (!currentUserId) {
-        showToast("사용자 정보를 가져올 수 없어 폴링을 시작할 수 없습니다.");
-        console.error("Cannot start polling: User ID is missing.");
-        return;
+    const currentMemberID = getEffectiveMemberID();
+    if (!currentMemberID) {
+      showToast("사용자 ID 정보를 가져올 수 없어 폴링을 시작할 수 없습니다.");
+      console.error("Cannot start polling: Member ID is missing.");
+      return;
     }
+
+    // 이미 매칭되었다면 폴링 시작하지 않음
+    if (isMatchedRef.current) {
+      console.log('Polling not started: already matched.');
+      return;
+    }
+
     setError(null);
+    setIsProcessingMatch(false);
     setIsPolling(true);
-    console.log('Polling started for userId:', currentUserId);
-  }, [getEffectiveUserId, showToast]);
+    console.log('Polling started for memberID:', currentMemberID);
+  }, [getEffectiveMemberID, showToast]);
 
   const stopPolling = useCallback(() => {
     setIsPolling(false);
+    clearPollingInterval();
     console.log('Polling stopped manually.');
-  }, []);
+  }, [clearPollingInterval]);
 
-  return { isPolling, error, startPolling, stopPolling };
-} 
+  // 🆕 컴포넌트 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      clearPollingInterval();
+      console.log('usePolling hook cleanup: interval cleared.');
+    };
+  }, [clearPollingInterval]);
+
+  return { 
+    isPolling, 
+    error, 
+    startPolling, 
+    stopPolling,
+    isProcessingMatch // 🆕 매칭 처리 중 상태 노출
+  };
+}
