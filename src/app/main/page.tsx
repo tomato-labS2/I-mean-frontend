@@ -177,7 +177,7 @@ export default function MainPage() {
               </button>
             </div>
             <p className="text-gray-700 mb-6">
-              아직 커플 등록을 하지 않으셨다면, 채팅을 위해 커플 등록을 진행해주세요! :D
+              아직 커플 등록을 하지 않으셨다면, 채팅을 위해 커플 등록을 진행해주세요!
             </p>
             <Link href="/auth/couple-register" passHref>
               <Button
