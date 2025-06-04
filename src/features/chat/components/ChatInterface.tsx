@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { ArrowLeft, Send } from "lucide-react"
@@ -78,10 +78,12 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
           if (isNaN(timestamp.getTime())) timestamp = new Date()
 
           let sender: "user" | "partner" | "ai" = "partner"
-          if (wsMessage.type === "system" || wsMessage.type === "error") {
+          if (wsMessage.type === "system" || wsMessage.type === "error" || wsMessage.user_id === "AI" || wsMessage.user_id === "AI_Report") {
             sender = "ai"
           } else if (wsMessage.user_id && wsMessage.user_id.toString() === currentMemberId) {
             sender = "user"
+          } else if(wsMessage.user_id === "AI" && wsMessage.type === "message") {
+            sender = "ai"
           }
           
           const chatMessage: ChatMessage = {
@@ -305,7 +307,14 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
                   }`}
                   style={message.sender === "user" ? { backgroundColor: '#C6DABA' } : {}}
                 >
-                  <p className="text-sm leading-relaxed break-all">{message.content}</p>
+                  <p className="text-sm leading-relaxed break-all">
+                    {message.content.split('\n').map((line, idx) => (
+                      <React.Fragment key={idx}>
+                        {line}
+                        <br />
+                      </React.Fragment>
+                    ))}
+                  </p>
                 </div>
 
                 <div className="text-xs text-gray-500 flex-shrink-0 pb-1">{formatTime(new Date(message.timestamp))}</div>
