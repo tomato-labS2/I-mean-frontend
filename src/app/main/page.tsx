@@ -4,6 +4,7 @@ import { Menu, LogOut, Heart, X } from "lucide-react"
 import Image from 'next/image'
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { ChatRoomModal } from "@/features/chat/components/ChatRoomModal"
 import { ChatInterface } from "@/features/chat/components/ChatInterface"
@@ -15,6 +16,7 @@ import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 import { useToast } from "@/components/common/Toast"
 
 export default function MainPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("home")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentChatRoom, setCurrentChatRoom] = useState<string | null>(null)
@@ -90,6 +92,8 @@ export default function MainPage() {
     } else if (tab === "ai-counseling") {
       console.log("AI 상담 기능")
       showToast("정보: AI 상담 기능은 준비 중입니다.")
+    } else if (tab === "profile") {
+      router.push("/profile")
     }
   }
 

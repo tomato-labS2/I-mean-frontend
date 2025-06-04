@@ -1,4 +1,5 @@
 import type { EmailRequestDTO, NicknameRequestDTO, PasswordRequestDTO, PhoneRequestDTO } from "@/types/signup"
+import { tokenStorage } from "@/features/auth/utils/tokenStorage";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
@@ -20,14 +21,19 @@ class ApiClient {
       ...options,
     };
 
-    // 토큰이 있으면 Authorization 헤더 추가
-    const token = typeof window !== "undefined" ? localStorage.getItem("imean_auth_token") : null;
+    const token = tokenStorage.getToken();
+    console.log(`[ApiClient] Requesting ${endpoint}. Token from tokenStorage:`, token);
+
     if (token) {
       config.headers = {
         ...config.headers,
         Authorization: `Bearer ${token}`,
       };
+    } else {
+      console.warn(`[ApiClient] No token found for ${endpoint}. Proceeding without Authorization header.`);
     }
+
+    console.log(`[ApiClient] Fetching ${url} with config:`, JSON.stringify(config.headers));
 
     const response = await fetch(url, config);
 
