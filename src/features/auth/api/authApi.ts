@@ -109,9 +109,18 @@ export const authApi = {
   },
 
   getProfile: async (): Promise<User> => {
-    const token = tokenStorage.getToken()
-    
-    // 토큰이 있고 멤버 정보가 로컬 스토리지에 있다면 해당 정보를 사용
+    const token = tokenStorage.getToken();
+    console.log("[authApi.getProfile] 토큰 확인:", token);
+
+    if (!token) {
+      console.warn("[authApi.getProfile] 토큰이 없어 API 호출 불가. 인증 실패 처리.");
+      tokenStorage.clear(); // 토큰이 없으면 확실히 로그아웃 상태로 만듬
+      throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+    }
+
+    console.log("[authApi.getProfile] /member/profile API 호출 시도...");
+    // 무조건 API를 호출하도록 기존 localStorage 로직 제거 또는 주석 처리
+    /*
     const memberCode = tokenStorage.getMemberCode()
     const coupleStatus = tokenStorage.getCoupleStatus()
     const memberId = tokenStorage.getMemberId()
@@ -132,28 +141,68 @@ export const authApi = {
         isSuperAdmin: memberRole === "SUPER_ADMIN"
       }
     }
+    */
     
-    // 토큰은 있지만 멤버 정보가 없는 경우 API 호출 시도
-    // 실제 프로필 API가 구현되면 여기를 수정
     const res = await fetch(`${API_BASE}/member/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-    })
-    
+    });
+    console.log("[authApi.getProfile] API 응답 상태:", res.status);
+
     if (!res.ok) {
-      // API 호출 실패 시 토큰 클리어
-      tokenStorage.clear()
-      throw new Error("인증 정보가 유효하지 않습니다.")
+      console.error("[authApi.getProfile] API 호출 실패, 상태:", res.status, "응답 텍스트:", await res.text().catch(() => '응답 없음'));
+      // API 호출 실패 시 토큰 클리어 (서버에서 토큰이 유효하지 않다고 판단한 경우 등)
+      // 하지만, 네트워크 오류 등의 경우 무조건 토큰을 지우는 것은 좋지 않을 수 있음.
+      // 여기서는 일단 서버가 401, 403 등을 반환했을 때를 가정하고 클리어합니다.
+      if (res.status === 401 || res.status === 403) {
+        tokenStorage.clear();
+        console.log("[authApi.getProfile] 인증 실패로 토큰 클리어됨.");
+      }
+      throw new Error(`사용자 정보 조회 API 실패: ${res.status}`);
     }
     
-    const result = await res.json()
-    if (!result.success) {
-      throw new Error(result.message || "사용자 정보 조회 실패")
+    const result = await res.json().catch(async (e) => {
+        console.error("[authApi.getProfile] API 응답 JSON 파싱 실패:", e, "응답 텍스트:", await res.text().catch(() => '응답 없음'));
+        throw new Error("사용자 정보 API 응답 파싱 실패");
+    });
+
+    console.log("[authApi.getProfile] API 응답 데이터:", result);
+
+    if (!result.success || !result.data) { // 백엔드 응답 구조에 success와 data 필드가 있다고 가정
+      console.error("[authApi.getProfile] API 응답 success false 또는 data 없음, 메시지:", result.message);
+      throw new Error(result.message || "사용자 정보 조회 실패 (데이터 없음)");
     }
-    return result.data as User
+
+    // API 응답을 기반으로 User 객체 구성 (실제 User 타입에 맞게 조정 필요)
+    // 예시: 백엔드가 result.data 안에 User 정보를 직접 반환한다고 가정
+    const apiUser = result.data;
+    const userToReturn: User = {
+        memberId: apiUser.memberId,
+        memberCode: apiUser.memberCode,
+        memberNickName: apiUser.memberNickname, // API 응답의 닉네임 필드명(apiUser.memberNickname)을 User 타입의 memberNickName으로 매핑
+        memberRole: apiUser.memberRole,
+        coupleStatus: apiUser.coupleStatus,
+        coupleId: apiUser.coupleId,
+        isInCouple: apiUser.coupleStatus === "COUPLE",
+        isAdmin: apiUser.memberRole === "ADMIN",
+        isSuperAdmin: apiUser.memberRole === "SUPER_ADMIN",
+    };
+
+    // API에서 받은 최신 정보로 localStorage 업데이트 (선택적이지만 권장)
+    tokenStorage.setMemberCode(userToReturn.memberCode);
+    tokenStorage.setCoupleStatus(userToReturn.coupleStatus);
+    tokenStorage.setMemberId(userToReturn.memberId);
+    tokenStorage.setCoupleId(userToReturn.coupleId);
+    tokenStorage.setMemberRole(userToReturn.memberRole);
+    if (userToReturn.memberNickName) { // memberNickName으로 수정
+        tokenStorage.setMemberNickname(userToReturn.memberNickName); // tokenStorage는 memberNickname 사용 유지 (필요시 tokenStorage도 통일)
+    }
+
+    console.log("[authApi.getProfile] 반환될 User 객체:", userToReturn);
+    return userToReturn;
   },
 
   // 현재 사용자의 memberCode를 가져오는 함수 (커플 코드 생성용)

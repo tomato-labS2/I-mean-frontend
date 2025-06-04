@@ -27,25 +27,35 @@ export function useAuth() {
   const { startPolling, stopPolling, isPolling } = usePolling(memberIdForPollingHook);
 
   const checkAuth = useCallback(async () => {
+    console.log("[useAuth] checkAuth: 중입니다...");
     setIsLoading(true);
     try {
       const token = tokenStorage.getToken()
+      console.log("[useAuth] checkAuth: 토큰 확인 중, token:", token);
+
       if (!token) {
+        console.log("[useAuth] checkAuth: 토큰 없음. 인증 실패로 설정.");
         setIsAuthenticated(false);
         setUser(null);
         setIsLoading(false)
         return
       }
-      const userData = await authApi.getProfile()
+
+      console.log("[useAuth] checkAuth: 토큰 발견됨. authApi.getProfile() 호출 시도.");
+      const userData = await authApi.getProfile() // 이 호출이 src/lib/api.ts의 로그를 트리거해야 함
+      console.log("[useAuth] checkAuth: authApi.getProfile() 성공, userData:", userData);
       setUser(userData)
       setIsAuthenticated(true)
+      console.log("[useAuth] checkAuth: 인증 성공으로 설정됨.");
     } catch (error) {
-      console.error("Auth check failed:", error)
+      console.error("[useAuth] checkAuth: authApi.getProfile() 실패 또는 기타 오류:", error);
       tokenStorage.clear()
+      console.log("[useAuth] checkAuth: 오류로 인해 토큰이 삭제됨.");
       setIsAuthenticated(false);
       setUser(null);
     } finally {
       setIsLoading(false)
+      console.log("[useAuth] checkAuth: 완료. isLoading: false, isAuthenticated:", isAuthenticated);
     }
   }, []) // 최초 마운트 시 실행되도록 의존성 배열 비워둠
 
