@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: 'export',
 
   // 정적 export를 위한 옵션 주석 처리 또는 삭제
   // trailingSlash: true,
@@ -15,17 +16,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // (선택) basePath도 설정 가능
-  // basePath: '/your-subpath',
 
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:8080/api/:path*',
-      },
-    ]
-  }
 };
 
 export default nextConfig;

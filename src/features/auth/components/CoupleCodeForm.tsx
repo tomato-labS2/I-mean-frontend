@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useCoupleRegister } from "@/features/auth/hooks/useCoupleRegister"
@@ -11,6 +10,7 @@ import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 import { useToast } from "@/components/common/Toast"
 
 const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY as string;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 interface KakaoLink {
   createDefaultButton: (opts: Record<string, unknown>) => void;
@@ -76,16 +76,16 @@ export function CoupleCodeForm() {
             description: `아래 코드를 입력하면 커플로 연결돼요 💕\n코드: ${memberCode}`,
             imageUrl: "https://yourdomain.com/share-image.png",
             link: {
-              mobileWebUrl: `http://localhost:8080/invite?code=${memberCode}`,
-              webUrl: `http://localhost:8080/invite?code=${memberCode}`,
+              mobileWebUrl: `${apiBaseUrl}/invite?code=${memberCode}`,
+              webUrl: `${apiBaseUrl}/invite?code=${memberCode}`,
             }
           },
           buttons: [
             {
               title: "코드로 접속하기",
               link: {
-                mobileWebUrl: `http://localhost:8080/invite?code=${memberCode}`,
-                webUrl: `http://localhost:8080/invite?code=${memberCode}`,
+                mobileWebUrl: `${apiBaseUrl}/invite?code=${memberCode}`,
+                webUrl: `${apiBaseUrl}/invite?code=${memberCode}`,
               },
             }
           ]

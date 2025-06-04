@@ -1,8 +1,7 @@
 import type { LoginFormData, RegisterFormData, AuthApiResponse, User } from "@/features/auth/types"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
-// const API_BASE = "http://localhost:8080/api"
-const API_BASE = "http://localhost:8080/api"
+const API_BASE = `${process.env.NEXT_PUBLIC_API_URL}/api`
 
 export const authApi = {
   login: async (data: LoginFormData): Promise<AuthApiResponse["data"]> => {

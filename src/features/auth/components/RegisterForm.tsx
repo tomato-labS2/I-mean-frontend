@@ -13,7 +13,7 @@ const resendEmailCode = async () => {"use client"}
   import type { RegisterFormData } from "@/features/auth/types"
   
   // 🆕 백엔드 API 기본 URL
-  const API_BASE = "http://localhost:8080/api"
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
   
   export function RegisterForm() {
     const { register, isLoading } = useRegister()
