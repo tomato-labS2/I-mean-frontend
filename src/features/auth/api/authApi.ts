@@ -2,7 +2,7 @@ import type { LoginFormData, RegisterFormData, AuthApiResponse, User } from "@/f
 import { tokenStorage } from "@/features/auth/utils/tokenStorage"
 
 // const API_BASE = "http://localhost:8080/api"
-const API_BASE = "http://localhost:8080/api"
+const API_BASE = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
 
 export const authApi = {
   login: async (data: LoginFormData): Promise<AuthApiResponse["data"]> => {
@@ -186,7 +186,7 @@ export const authApi = {
         memberRole: apiUser.memberRole,
         coupleStatus: apiUser.coupleStatus,
         coupleId: apiUser.coupleId,
-        isInCouple: apiUser.coupleStatus === "COUPLE",
+        isInCouple: apiUser.coupleStatus === "COUPLE" || apiUser.coupleStatus === "COUPLED",
         isAdmin: apiUser.memberRole === "ADMIN",
         isSuperAdmin: apiUser.memberRole === "SUPER_ADMIN",
     };

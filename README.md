@@ -64,7 +64,7 @@ src/
 ## 🌐 환경 변수 예시 (`.env.local`)
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ```
 
 * `NEXT_PUBLIC_` 접두사를 붙여야 **브라우저에서도 읽을 수 있음**

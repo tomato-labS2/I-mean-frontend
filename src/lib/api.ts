@@ -1,7 +1,8 @@
 import type { EmailRequestDTO, NicknameRequestDTO, PasswordRequestDTO, PhoneRequestDTO } from "@/types/signup"
 import { tokenStorage } from "@/features/auth/utils/tokenStorage";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
 
 class ApiClient {
   private baseURL: string;
