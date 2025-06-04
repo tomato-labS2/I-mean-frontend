@@ -76,18 +76,34 @@ export function CoupleCodeForm() {
             description: `아래 코드를 입력하면 커플로 연결돼요 💕\n코드: ${memberCode}`,
             imageUrl: "https://yourdomain.com/share-image.png",
             link: {
-              mobileWebUrl: `http://localhost:8080/invite?code=${memberCode}`,
-              webUrl: `http://localhost:8080/invite?code=${memberCode}`,
+              mobileWebUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
+              webUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
             }
           },
           buttons: [
             {
               title: "코드로 접속하기",
               link: {
-                mobileWebUrl: `http://localhost:8080/invite?code=${memberCode}`,
-                webUrl: `http://localhost:8080/invite?code=${memberCode}`,
+                mobileWebUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
+                webUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
               },
-            }
+            },
+            {
+              title: "카카오톡으로 초대하기",
+              imageUrl: "/images/kakao_symbol.png",
+              link: {
+                mobileWebUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
+                webUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
+              },
+            },
+            {
+              title: "URL 복사하기",
+              imageUrl: "/images/url_copy_symbol.png",
+              link: {
+                mobileWebUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
+                webUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
+              },
+            },
           ]
         })
         console.log('Kakao share button created')
