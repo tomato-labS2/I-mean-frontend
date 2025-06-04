@@ -223,12 +223,11 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
   }
 
   const AiAvatar = ({ size = 48 }: { size?: number }) => (
-    <div
-      className="rounded-full bg-gradient-to-br from-yellow-300 to-orange-300 flex items-center justify-center border-2 border-yellow-200"
-      style={{ width: size, height: size }}
-    >
-      <span className="text-lg">😊</span>
-    </div>
+    <img
+      src="/ai.png"
+      alt="AI 상담사"
+      style={{ width: size, height: size, borderRadius: '50%', border: '2px solid #ffe066', background: 'linear-gradient(135deg, #ffe066 0%, #ffb347 100%)', objectFit: 'cover' }}
+    />
   )
 
   return (
