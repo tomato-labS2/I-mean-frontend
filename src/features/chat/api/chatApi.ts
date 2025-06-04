@@ -9,6 +9,16 @@ export interface CreateChatRoomResponse extends ChatRoom {
   is_existing: boolean;
 }
 
+// +++ 추가: 커플 채팅방 조회 응답 인터페이스 +++
+export interface GetCoupleChatRoomResponse {
+  id: string | null; // 방이 없으면 null 일 수 있음
+  name: string | null; // 방이 없으면 null 일 수 있음
+  is_existing: boolean;
+  created_at?: string | Date | null; // created_at 필드 추가 (옵셔널 또는 실제 타입으로)
+  // 필요하다면 백엔드가 반환하는 다른 필드들도 추가
+  // 예: couple_id?: string; created_at?: string;
+}
+
 export const chatApi = {
   // 채팅방 생성 또는 조회
   createChatRoom: async (data: CreateChatRoomData): Promise<CreateChatRoomResponse> => {
@@ -121,5 +131,61 @@ export const chatApi = {
       createdAt: createdAt,
       is_existing: is_existing,
     }
+  },
+
+  // +++ 새로운 함수: coupleId로 채팅방 존재 여부 및 정보 조회 +++
+  getCoupleChatRoom: async (coupleId: string): Promise<GetCoupleChatRoomResponse> => {
+    const token = tokenStorage.getToken();
+    // 조회 API는 user_id가 필수는 아닐 수 있지만, 필요하다면 추가
+    // const memberId = tokenStorage.getMemberId(); 
+    
+    console.log("커플 채팅방 조회 API 요청 데이터:", {
+      token: token ? "존재함" : "없음",
+      coupleId
+    });
+
+    if (!token) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    // 백엔드에서 GET /api/rooms/couple/{coupleId} 와 같은 엔드포인트를 제공한다고 가정
+    // 실제 엔드포인트는 백엔드 개발자와 협의 필요
+    const res = await fetch(`${API_BASE}/rooms/couple/${coupleId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json", // GET 요청에도 필요에 따라 포함
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("커플 채팅방 조회 API 응답 상태:", res.status, res.statusText);
+
+    if (res.status === 404) { // 방이 존재하지 않는 경우
+      return { id: null, name: null, is_existing: false };
+    }
+
+    if (!res.ok) {
+      // 기타 에러 처리 (예: 500 서버 에러 등)
+      const errorText = await res.text();
+      console.error("커플 채팅방 조회 API 오류 응답:", errorText);
+      throw new Error(`커플 채팅방 조회에 실패했습니다. (상태: ${res.status})`);
+    }
+
+    // res.ok 이고 404가 아니면, 방이 존재하고 유효한 JSON 응답을 기대
+    const result = await res.json();
+    console.log("커플 채팅방 조회 API 성공 응답 데이터:", result);
+
+    // 백엔드 응답 구조에 따라 roomId, roomName 등을 추출
+    // 예시: result가 { room_id: '123', room_name: '커플방', is_existing: true } 형태라고 가정
+    // 또는 result 자체가 GetCoupleChatRoomResponse와 유사한 구조일 수 있음
+    return {
+      id: result.room_id?.toString() || result.id?.toString() || null,
+      name: result.room_name || result.name || null,
+      is_existing: typeof result.is_existing === 'boolean' ? result.is_existing : true, 
+      created_at: result.created_at ? new Date(result.created_at) :
+                  result.createdAt ? new Date(result.createdAt) :
+                  null,
+      // is_existing가 명시적으로 없다면, 200 OK는 존재한다고 간주 (백엔드와 협의 필요)
+    };
   },
 } 
