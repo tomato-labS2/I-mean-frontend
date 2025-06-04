@@ -78,10 +78,12 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
           if (isNaN(timestamp.getTime())) timestamp = new Date()
 
           let sender: "user" | "partner" | "ai" = "partner"
-          if (wsMessage.type === "system" || wsMessage.type === "error" || wsMessage.user_id === "AI") {
+          if (wsMessage.type === "system" || wsMessage.type === "error" || wsMessage.user_id === "AI" || wsMessage.user_id === "AI_Report") {
             sender = "ai"
           } else if (wsMessage.user_id && wsMessage.user_id.toString() === currentMemberId) {
             sender = "user"
+          } else if(wsMessage.user_id === "AI" && wsMessage.type === "message") {
+            sender = "ai"
           }
           
           const chatMessage: ChatMessage = {
