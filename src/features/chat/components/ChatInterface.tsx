@@ -18,6 +18,7 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, onHistoryReceived, onBack }: ChatInterfaceProps) => {
+  console.log(`[ChatInterface] Component Rendered/Updated. Props: roomId=${roomId}, roomName=${roomName}, messagesCount=${messages.length}`);
   const [inputMessage, setInputMessage] = useState("")
   const [isAiMode, setIsAiMode] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
@@ -34,14 +35,20 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
   }, [messages])
 
   useEffect(() => {
-    if (wsInitializedRef.current || !roomId) return
+    console.log(`[ChatInterface] useEffect for roomId: ${roomId} triggered. wsInitializedRef.current: ${wsInitializedRef.current}`);
+    if (wsInitializedRef.current || !roomId) {
+      console.log(`[ChatInterface] useEffect for roomId: ${roomId} - Skipping WebSocket setup (already initialized or no roomId).`);
+      return
+    }
     wsInitializedRef.current = true
-
     let isMounted = true
 
     const setupWebSocket = async () => {
-      if (!isMounted) return
-      console.log(`[ChatInterface ${roomId}] WebSocket 연결 테스트 시작...`)
+      if (!isMounted) {
+        console.log(`[ChatInterface ${roomId}] setupWebSocket: Component not mounted, skipping.`);
+        return
+      }
+      console.log(`[ChatInterface ${roomId}] setupWebSocket: WebSocket 연결 테스트 시작...`)
       const canConnect = await testWebSocketConnection(roomId)
       if (!isMounted) return
 
@@ -144,7 +151,7 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
       }
 
       try {
-        console.log(`[ChatInterface ${roomId}] connectWebSocket 호출`)
+        console.log(`[ChatInterface ${roomId}] setupWebSocket: connectWebSocket 호출 준비. roomId: ${roomId}`);
         await connectWebSocket(
           roomId,
           handleSystemPrompt,
@@ -154,23 +161,25 @@ export const ChatInterface = ({ roomName, roomId, messages, onMessageReceived, o
           handleConnectionError,
           handleConnectionClose
         )
+        console.log(`[ChatInterface ${roomId}] setupWebSocket: connectWebSocket 호출 완료.`);
       } catch (error) {
         if (!isMounted) return
-        console.error(`[ChatInterface ${roomId}] WebSocket 연결 설정 실패:`, error)
+        console.error(`[ChatInterface ${roomId}] setupWebSocket: WebSocket 연결 설정 실패:`, error)
         setIsConnected(false)
       }
     }
 
+    console.log(`[ChatInterface ${roomId}] useEffect: Calling setupWebSocket.`);
     setupWebSocket()
 
     return () => {
-      console.log(`[ChatInterface ${roomId}] 컴포넌트 언마운트, WebSocket 정리`)
+      console.log(`[ChatInterface ${roomId}] useEffect cleanup: 컴포넌트 언마운트 또는 roomId 변경. WebSocket 정리.`);
       isMounted = false
       wsInitializedRef.current = false
       closeWebSocket() 
       setIsConnected(false)
     }
-  }, [roomId])
+  }, [roomId, onHistoryReceived, onMessageReceived])
 
   const handleSend = () => {
     if (inputMessage.trim() && isConnected) {

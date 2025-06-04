@@ -27,9 +27,10 @@ export default function MainPage() {
   const { isAuthenticated } = useAuth()
   const { logout } = useLogout()
   const coupleStatus = tokenStorage.getCoupleStatus()
-  const { chatRooms, createChatRoom, getMessagesForRoom, addMessage, addHistoryMessages, clearMessagesForRoom } = useChat()
+  const { chatRooms, createChatRoom, getMessagesForRoom, addMessage, addHistoryMessages, clearMessagesForRoom, getCoupleChatRoomInfo } = useChat()
   const { showToast } = useToast()
 
+  console.log("[MainPage] Component Rerendered. currentChatRoom:", currentChatRoom);
   useEffect(() => {
     console.log("메인 페이지 마운트됨")
     console.log("현재 URL:", window.location.href)
@@ -63,31 +64,36 @@ export default function MainPage() {
   const handleTabChange = async (tab: string) => {
     setActiveTab(tab)
     if (tab === "couple-chat") {
-      const coupleId = tokenStorage.getCoupleId()
-      if (!coupleId) {
+      const coupleIdFromStorage = tokenStorage.getCoupleId()
+      if (!coupleIdFromStorage) {
         showToast("오류: 커플 정보가 없습니다. 먼저 커플을 등록해주세요.")
         setActiveTab("home")
         return
       }
+      const coupleId = coupleIdFromStorage.toString()
 
       try {
-        console.log(`[MainPage] 커플 채팅 탭 클릭. coupleId: ${coupleId}로 채팅방 조회/생성 시도`);
-        const roomData = await createChatRoom({ name: "커플 채팅", coupleId })
-        console.log("[MainPage] 조회/생성 결과:", roomData);
+        console.log(`[MainPage] handleTabChange: "couple-chat" 탭 클릭. coupleId: ${coupleId}로 기존 방 조회 시도`)
+        const roomInfo = await getCoupleChatRoomInfo(coupleId)
+        console.log("[MainPage] handleTabChange: 기존 커플 채팅방 조회 결과 (roomInfo):", JSON.stringify(roomInfo))
 
-        if (roomData.is_existing) {
-          // showToast(`기존 채팅방 "${roomData.name}"에 참여합니다.`)
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          setCurrentChatRoom(roomData.id)
+        if (roomInfo.is_existing && roomInfo.id) {
+          console.log(`[MainPage] handleTabChange: 기존 방 존재 확인. roomId: ${roomInfo.id}, roomName: ${roomInfo.name}`)
+          showToast(`기존 채팅방 "${roomInfo.name || '커플 채팅'}"에 참여합니다.`)
+          setCurrentChatRoom(roomInfo.id)
+          console.log("[MainPage] handleTabChange: setCurrentChatRoom 호출됨. 새로운 currentChatRoom ID debería ser:", roomInfo.id)
           setIsModalOpen(false)
         } else {
+          console.log("[MainPage] handleTabChange: 기존 방 없음. 모달 열기 준비.")
           showToast(`새로운 커플 채팅방 이름을 설정해주세요.`)
-          setInitialRoomName(roomData.name || "")
+          setInitialRoomName("커플 채팅")
           setIsModalOpen(true)
         }
       } catch (error) {
-        console.error("커플 채팅방 조회/생성 중 오류 (handleTabChange):", error)
-        setActiveTab("home")
+        console.error("[MainPage] handleTabChange: 커플 채팅방 조회 중 예상치 못한 오류:", error)
+        showToast(`채팅방 정보를 가져오는데 실패했습니다. 새 채팅방을 만들어주세요.`)
+        setInitialRoomName("커플 채팅")
+        setIsModalOpen(true)
       }
     } else if (tab === "ai-counseling") {
       console.log("AI 상담 기능")
@@ -110,24 +116,30 @@ export default function MainPage() {
       return
     }
 
+    console.log(`[MainPage] handleConfirmAndCreateRoom: 모달에서 이름 입력 후 채팅방 생성/확정 시도: ${roomNameFromModal}, coupleId: ${coupleId}`);
     try {
-      console.log(`[MainPage] 모달에서 이름 입력 후 채팅방 생성/확정 시도: ${roomNameFromModal}, coupleId: ${coupleId}`);
+      console.log(`[MainPage] handleConfirmAndCreateRoom: 모달에서 이름 입력 후 채팅방 생성/확정 시도: ${roomNameFromModal}, coupleId: ${coupleId}`);
       const newRoomData = await createChatRoom({ name: roomNameFromModal.trim(), coupleId })
-      console.log("[MainPage] 모달 확인 후 생성/확정 결과:", newRoomData);
+      console.log("[MainPage] handleConfirmAndCreateRoom: 모달 확인 후 생성/확정 결과 (newRoomData):", JSON.stringify(newRoomData));
       
-      if (newRoomData.is_existing && newRoomData.name !== roomNameFromModal.trim()) {
-        showToast(`"${newRoomData.name}" 채팅방에 참여합니다. (요청 이름: ${roomNameFromModal.trim()})`)
+      if (newRoomData.name !== roomNameFromModal.trim()) {
+        if (newRoomData.is_existing) {
+            showToast(`"${newRoomData.name}" 채팅방에 참여합니다. (요청한 이름: "${roomNameFromModal.trim()}"과 다릅니다.)`);
+        } else {
+            showToast(`채팅방이 "${newRoomData.name}" 이름으로 생성되었습니다. (요청한 이름: "${roomNameFromModal.trim()}")`);
+        }
       } else if (newRoomData.is_existing) {
-        showToast(`기존 채팅방 "${newRoomData.name}"에 참여합니다.`)
+        showToast(`기존 채팅방 "${newRoomData.name}"에 참여합니다.`);
       } else {
-        showToast(`"${newRoomData.name}" 채팅방이 생성되었습니다!`)
+        showToast(`"${newRoomData.name}" 채팅방이 생성되었습니다!`);
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setCurrentChatRoom(newRoomData.id)
-      setIsModalOpen(false)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCurrentChatRoom(newRoomData.id);
+      console.log("[MainPage] handleConfirmAndCreateRoom: setCurrentChatRoom 호출됨. 새로운 currentChatRoom ID debería ser:", newRoomData.id);
+      setIsModalOpen(false);
 
     } catch (error) {
-      console.error("채팅방 생성/확정 중 오류 (handleConfirmAndCreateRoom):", error)
+      console.error("[MainPage] handleConfirmAndCreateRoom: 채팅방 생성/확정 중 오류:", error)
       showToast("오류: 채팅방을 만들거나 참여하는 중 문제가 발생했습니다.")
     }
   }
@@ -143,9 +155,12 @@ export default function MainPage() {
   }
 
   const currentRoom = chatRooms.find((room) => room.id === currentChatRoom)
+  console.log("[MainPage] Rendering UI. currentChatRoom:", currentChatRoom, "Found currentRoom:", currentRoom ? JSON.stringify(currentRoom) : 'Not Found in chatRooms');
+
   const currentMessages = currentChatRoom ? getMessagesForRoom(currentChatRoom) : []
 
   if (currentChatRoom && currentRoom) {
+    console.log("[MainPage] Rendering ChatInterface with roomId:", currentChatRoom, "roomName:", currentRoom.name);
     return (
       <ChatInterface
         roomName={currentRoom.name}
