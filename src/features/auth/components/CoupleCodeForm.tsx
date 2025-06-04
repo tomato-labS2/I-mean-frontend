@@ -90,6 +90,8 @@ export function CoupleCodeForm() {
             },
             {
               title: "초대장 확인하기",
+
+
               link: {
                 mobileWebUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
                 webUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
