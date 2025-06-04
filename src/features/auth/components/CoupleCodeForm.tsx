@@ -89,16 +89,7 @@ export function CoupleCodeForm() {
               },
             },
             {
-              title: "카카오톡으로 초대하기",
-              imageUrl: "/images/kakao_symbol.png",
-              link: {
-                mobileWebUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
-                webUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
-              },
-            },
-            {
-              title: "URL 복사하기",
-              imageUrl: "/images/url_copy_symbol.png",
+              title: "초대장 확인하기",
               link: {
                 mobileWebUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
                 webUrl: `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite?code=${memberCode}`,
