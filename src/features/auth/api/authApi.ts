@@ -186,7 +186,9 @@ export const authApi = {
         memberRole: apiUser.memberRole,
         coupleStatus: apiUser.coupleStatus,
         coupleId: apiUser.coupleId,
+
         isInCouple: apiUser.coupleStatus === "COUPLE" || apiUser.coupleStatus === "COUPLED",
+
         isAdmin: apiUser.memberRole === "ADMIN",
         isSuperAdmin: apiUser.memberRole === "SUPER_ADMIN",
     };
